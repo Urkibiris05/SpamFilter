@@ -13,7 +13,7 @@ public class SMS2Arff {
 
             pw.println("@relation sms_spam_proiektua\n");
             pw.println("@attribute Text string");
-            pw.println("@attribute class {ham, spam}\n");
+            pw.println("@attribute class_label {ham, spam}\n");
             pw.println("@data");
 
             while (sc.hasNextLine()) {
