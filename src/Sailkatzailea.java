@@ -1,3 +1,4 @@
+import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
@@ -15,13 +16,13 @@ public class Sailkatzailea {
             DataSource sourceTrain = new DataSource(trainFile);
             Instances train = sourceTrain.getDataSet();
             if (train.classIndex() == -1){
-                train.setClassIndex(train.numAttributes() - 1);
+                train.setClassIndex(0);
             }
             arff[0] = train;
             DataSource sourceDev = new DataSource(devFile);
             Instances dev = sourceDev.getDataSet();
             if (dev.classIndex() == -1){
-                dev.setClassIndex(dev.numAttributes() - 1);
+                dev.setClassIndex(0);
             }
             arff[1] = dev;
             return arff;
@@ -80,5 +81,17 @@ public class Sailkatzailea {
             System.out.println("ERROREA: parametro ekorketa egitean.");
             return null;
         }
+    }
+
+    public Classifier sailkatzaileaSortu(String[] parametroak){
+        MultilayerPerceptron mlp = new MultilayerPerceptron();
+        mlp.setNominalToBinaryFilter(true);
+        mlp.setDecay(true);
+        mlp.setTrainingTime(500);
+        mlp.setHiddenLayers();
+        mlp.setLearningRate();
+        mlp.setMomentum();
+
+        mlp.buildClassifier();
     }
 }
