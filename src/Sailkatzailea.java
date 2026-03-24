@@ -2,6 +2,7 @@ import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
+import weka.core.SerializationHelper;
 import weka.core.converters.ConverterUtils.DataSource;
 
 import java.io.IOException;
@@ -83,15 +84,28 @@ public class Sailkatzailea {
         }
     }
 
-    public Classifier sailkatzaileaSortu(String[] parametroak){
-        MultilayerPerceptron mlp = new MultilayerPerceptron();
-        mlp.setNominalToBinaryFilter(true);
-        mlp.setDecay(true);
-        mlp.setTrainingTime(500);
-        mlp.setHiddenLayers();
-        mlp.setLearningRate();
-        mlp.setMomentum();
+    public Classifier sailkatzaileaSortu(String[] parametroak, Instances train, String path) throws Exception{
+        try {
+            //.model finala sortu (Parametro hoberenekin)
+            String hl = parametroak[0];
+            Double lr = Double.parseDouble(parametroak[1]);
+            Double m = Double.parseDouble(parametroak[2]);
+            MultilayerPerceptron mlp = new MultilayerPerceptron();
+            mlp.setNominalToBinaryFilter(true);
+            mlp.setDecay(true);
+            mlp.setTrainingTime(500);
+            mlp.setHiddenLayers(hl);
+            mlp.setLearningRate(lr);
+            mlp.setMomentum(m);
+            mlp.buildClassifier(train);
 
-        mlp.buildClassifier();
+            //.model gorde entregatzeko
+            String outputPath = path;
+            SerializationHelper.write(path, mlp);
+            return null;
+        } catch ( IOException e) {
+            System.out.println("ERROREA: .model finala sortzean.");
+            return null;
+        }
     }
 }
