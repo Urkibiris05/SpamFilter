@@ -51,7 +51,7 @@ public class Sailkatzailea {
                         MultilayerPerceptron mlp = new MultilayerPerceptron();
                         mlp.setNominalToBinaryFilter(true);
                         mlp.setDecay(true);
-                        mlp.setTrainingTime(500);
+                        mlp.setTrainingTime(500); 
                         mlp.setHiddenLayers(h);
                         mlp.setLearningRate(l);
                         mlp.setMomentum(m);

@@ -1,5 +1,3 @@
-
-
 import weka.core.Instances;
 import weka.core.converters.ConverterUtils.DataSource;
 
@@ -10,17 +8,19 @@ public class SpamFilter {
     private static Sailkatzailea sailkatzailea = new Sailkatzailea();
 
     public static void main(String[] args) throws Exception {
-        String rawTrainPath = "data/arff/SMS_SpamCollection.train.arff";
-        DataSource source =  new DataSource(rawTrainPath);
-        Instances rawTrain = source.getDataSet();
-        if (rawTrain.classIndex() == -1) rawTrain.setClassIndex(rawTrain.numAttributes() - 1);
+        String rawTrainPath = "src/data/arff/SMS_SpamCollection.train.arff";
+        String bekTrainPath = "src/data/arff/SMS_SpamCollection.bektrain.arff";
 
-        Instances bekData = dataProcessor.bektorizatu(rawTrain);
-        dataProcessor.instantziakAztertu(bekData, "LEHEN FROGA");
 
+        // dataProcessor.sms2Arff(rawTrainPath);
+        // dataProcessor.bektorizatu(rawTrainPath, bekTrainPath);
+        //  dataProcessor.instantziakAztertu(bekTrainPath, "LEHEN FROGA");
+        dataProcessor.parametroBilatzailea(rawTrainPath);
+
+        /*
         Instances[] arff = sailkatzailea.arffKargatu(bekData); // Parametro arff
         String[] parametroak = sailkatzailea.parametroOptimoakLortu(arff);
-
+        */
 
 
     }
