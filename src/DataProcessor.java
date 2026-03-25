@@ -6,12 +6,16 @@ import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.stemmers.IteratedLovinsStemmer;
+import weka.core.stemmers.LovinsStemmer;
 import weka.core.stemmers.SnowballStemmer;
+import weka.core.stemmers.Stemmer;
 import weka.core.stopwords.Rainbow;
 import weka.core.tokenizers.AlphabeticTokenizer;
 import weka.core.tokenizers.NGramTokenizer;
+import weka.core.tokenizers.Tokenizer;
 import weka.core.tokenizers.WordTokenizer;
 import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.FixedDictionaryStringToWordVector;
 import weka.filters.unsupervised.attribute.StringToWordVector;
 
 import java.io.File;
@@ -115,47 +119,72 @@ public class DataProcessor {
         System.out.println("======================================================\n");
     }
 
-    public void bektorizatu(String rawDataPath, String bekDataPath) throws Exception {
+    public void bektorizatu(String rawDataPath, String bekDataPath, String dicFilePath, boolean isDicNull) throws Exception {
         Instances rawData = new DataSource(rawDataPath).getDataSet();
         if (rawData.classIndex() == -1) rawData.setClassIndex(rawData.numAttributes() - 1);
 
         Instances bekData = null;
         int wordsToKeep = 1000;
 
-        StringToWordVector filter = new StringToWordVector();
 
-        filter.setLowerCaseTokens(true);
-        filter.setOutputWordCounts(true);
-        filter.setTFTransform(true);
-        filter.setIDFTransform(true);
-        //filter.setWordsToKeep(wordsToKeep);
+        if (isDicNull){
+            StringToWordVector filter = new StringToWordVector();
+            File dicFile = new File(dicFilePath);
+            dicFile.createNewFile();
+            filter.setDictionaryFileToSaveTo(dicFile);
 
-        // Stemmerra (hitzak erro-mailara murrizteko algoritmoa, adib. "running" -> "run")
+            filter.setLowerCaseTokens(true);
+            filter.setOutputWordCounts(true);
+            filter.setTFTransform(true);
+            filter.setIDFTransform(true);
+            // filter.setWordsToKeep(wordsToKeep);
 
-        // Snowball (ingeleserako oso estandarra), weka paketea independenteki instalatu behar da
-        // SnowballStemmer stemmer = new SnowballStemmer();
-        // stemmer.setStemmer("english");
+            // Stemmer-a
+            IteratedLovinsStemmer stemmer = new IteratedLovinsStemmer();
+            filter.setStemmer(stemmer);
 
-        // IteratedLovinsStemmer Weka core-aren barruan dago, kanpoko paketerik behar gabe
-        IteratedLovinsStemmer stemmer = new IteratedLovinsStemmer();
-        filter.setStemmer(stemmer);
+            // Tokenizer
+            AlphabeticTokenizer tokenizer = new AlphabeticTokenizer();
+            filter.setTokenizer(tokenizer);
 
-        filter.setStemmer(stemmer);
+            // Stop word-ak (esanahi handirik ematen ez duten hitz arruntak)
+            // Wekak automatikoki ezabatuko ditu "the", "a", "an", "in"... bezalako hitzak
+            Rainbow stopWords = new Rainbow();
+            filter.setStopwordsHandler(stopWords);
 
-        // Tokenizatzailea (hitzak nola banatzen ditugun)
-        // Lehenespenez, zuriuneak eta puntuazio-ikurrak erabiltzen ditu, oso egokia SMSetarako
-        //WordTokenizer tokenizer = new WordTokenizer();
-        AlphabeticTokenizer tokenizer = new AlphabeticTokenizer();
-        filter.setTokenizer(tokenizer);
+            // Datu sorta bektorizatua itzuli
+            filter.setInputFormat(rawData);
+            bekData = Filter.useFilter(rawData, filter);
 
-        // Stop word-ak (esanahi handirik ematen ez duten hitz arruntak)
-        // Wekak automatikoki ezabatuko ditu "the", "a", "an", "in"... bezalako hitzak
-        Rainbow stopWords = new Rainbow();
-        filter.setStopwordsHandler(stopWords);
+        } else {
+            FixedDictionaryStringToWordVector filter = new FixedDictionaryStringToWordVector();
+            File dicFile = new File(dicFilePath);
+            dicFile.createNewFile();
+            filter.setDictionaryFile(dicFile);
 
-        // Datu sorta bektorizatua itzuli
-        filter.setInputFormat(rawData);
-        bekData = Filter.useFilter(rawData, filter);
+            filter.setLowerCaseTokens(true);
+            filter.setOutputWordCounts(true);
+            filter.setTFTransform(true);
+            filter.setIDFTransform(true);
+            // filter.setWordsToKeep(wordsToKeep);
+
+            // Stemmer-a
+            IteratedLovinsStemmer stemmer = new IteratedLovinsStemmer();
+            filter.setStemmer(stemmer);
+
+            // Tokenizer
+            AlphabeticTokenizer tokenizer = new AlphabeticTokenizer();
+            filter.setTokenizer(tokenizer);
+
+            // Stop word-ak (esanahi handirik ematen ez duten hitz arruntak)
+            // Wekak automatikoki ezabatuko ditu "the", "a", "an", "in"... bezalako hitzak
+            Rainbow stopWords = new Rainbow();
+            filter.setStopwordsHandler(stopWords);
+
+            // Datu sorta bektorizatua itzuli
+            filter.setInputFormat(rawData);
+            bekData = Filter.useFilter(rawData, filter);
+        }
 
         ArffSaver saver = new ArffSaver();
         File bekDataFile = new File(bekDataPath);
@@ -245,17 +274,17 @@ public class DataProcessor {
         System.out.println("\n>>> ESPERIMENTUA D: Konbinazioen Sareko Bilaketa (Grid Search) <<<");
 
         // 1. Probatu nahi ditugun Tokenizatzaileak
-        weka.core.tokenizers.Tokenizer[] tokenizers = {
-                new weka.core.tokenizers.WordTokenizer(),
-                new weka.core.tokenizers.AlphabeticTokenizer()
+        Tokenizer[] tokenizers = {
+                new WordTokenizer(),
+                new AlphabeticTokenizer()
         };
         String[] tokIzenak = {"WordTokenizer (Zenbakiak mantendu)", "AlphabeticTokenizer (Letrak bakarrik)"};
 
         // 2. Probatu nahi ditugun Stemmer-ak
-        weka.core.stemmers.Stemmer[] stemmers = {
+        Stemmer[] stemmers = {
                 null, // Stemmer-ik ez erabili
-                new weka.core.stemmers.LovinsStemmer(),
-                new weka.core.stemmers.IteratedLovinsStemmer()
+                new LovinsStemmer(),
+                new IteratedLovinsStemmer()
         };
         String[] stemIzenak = {"Ez (Null)", "Lovins", "IteratedLovins"};
 
@@ -327,7 +356,7 @@ public class DataProcessor {
             InfoGainAttributeEval eval = new InfoGainAttributeEval();
             eval.buildEvaluator(data);
 
-            weka.attributeSelection.Ranker ranker = new weka.attributeSelection.Ranker();
+            Ranker ranker = new Ranker();
             int[] topAtributuak = ranker.search(eval, data);
 
             int inprimatzekoKopurua = Math.min(10, topAtributuak.length);
