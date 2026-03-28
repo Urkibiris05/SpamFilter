@@ -15,14 +15,15 @@ public class SpamFilter {
         String rawTestPath = "src/data/arff/SMS_SpamCollection.test_blind.arff";
         String bekTestPath = "src/data/arff/SMS_SpamCollection.bektest_blind.arff";
 
-        String dicFilePath = "src/data/txt/train_dictionary.txt";
+        String multiFilterPath = "src/data/model/multiFilter.model";
 
         // dataProcessor.sms2Arff(rawTrainPath);
-        dataProcessor.bektorizatu(rawTrainPath, bekTrainPath, dicFilePath, true);
-        dataProcessor.bektorizatu(rawDevPath, bekDevPath, dicFilePath, false);
-        dataProcessor.bektorizatu(rawTestPath, bekTestPath, dicFilePath, false);
+        dataProcessor.bektorizatu(rawTrainPath, bekTrainPath, multiFilterPath, true);
+        dataProcessor.bektorizatu(rawDevPath, bekDevPath, multiFilterPath, false);
+        dataProcessor.bektorizatu(rawTestPath, bekTestPath, multiFilterPath, false);
         // dataProcessor.instantziakAztertu(bekTrainPath, "LEHEN FROGA");
-        // dataProcessor.parametroBilatzailea(rawTrainPath);
+        //dataProcessor.parametroBilatzailea(rawTrainPath);
+        //dataProcessor.parametroBilatzaileaV2(rawTrainPath, rawDevPath);
 
         /*
         Instances[] arff = sailkatzailea.arffKargatu(bekData); // Parametro arff
