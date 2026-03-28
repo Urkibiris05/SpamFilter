@@ -3,11 +3,19 @@ import weka.classifiers.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
+import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
+import weka.core.stemmers.IteratedLovinsStemmer;
+import weka.core.stopwords.Rainbow;
+import weka.core.tokenizers.AlphabeticTokenizer;
+import weka.filters.Filter;
+import weka.filters.unsupervised.attribute.StringToWordVector;
 
+import java.io.File;
 import java.io.IOException;
 
 public class Sailkatzailea {
+    private DataProcessor dataProcessor = new DataProcessor();
 
     public Instances[] arffKargatu(String[] args) throws Exception{
         try {
@@ -40,127 +48,89 @@ public class Sailkatzailea {
         }
     }
 
-    public String[] parametroOptimoakLortu(Instances[] arff) throws Exception{
-        try{
-            Instances train = arff[0];
-            Instances dev = arff[1];
-            String[] balioParametroa = new String[4];
-            String[] hiddenLayersBalioak = {" ", "a", "o", "i", "5", "10", "20", "10, 5", "a, a"};
-            double[] learningRatesBalioak = {0.01,0.05, 0.1, 0.3};
-            double[] momentumsBalioak = {0.1, 0.2};
-            int[] epochBalioak = {100, 300, 500};
-            String bestH = "";
-            Double bestL = 0.0;
-            Double bestM = 0.0;
-            Double bestPrecision = 0.0;
-            int bestEpoch = 0;
+    public void erregresioLineala(Instances[] instantziak) throws Exception {
+        Instances train = instantziak[0];
+        Instances dev = instantziak[1];
 
-            //Klase spam-aren indizea
-            int idxSpam = 0;
+        System.out.println("======================================================");
+        System.out.println("              📊 ERREGRESIO LINEALA ");
+        System.out.println("======================================================");
 
-            for (int e : epochBalioak) {
-                for (String h : hiddenLayersBalioak){
-                    for (Double l : learningRatesBalioak){
-                        for (Double m : momentumsBalioak){
-                            MultilayerPerceptron mlp = new MultilayerPerceptron();
-                            mlp.setNominalToBinaryFilter(true);
-                            mlp.setDecay(true);
-                            mlp.setTrainingTime(e);
-                            mlp.setHiddenLayers(h);
-                            mlp.setLearningRate(l);
-                            mlp.setMomentum(m);
+        MultilayerPerceptron mlp = new MultilayerPerceptron();
+        mlp.setNominalToBinaryFilter(true);  //Mirar que hace
+        mlp.setHiddenLayers("1");
+        mlp.setLearningRate(0.1);
+        mlp.setMomentum(0.1);
+        mlp.buildClassifier(train);
 
-                            mlp.buildClassifier(train);
-
-                            Evaluation eval = new Evaluation(train);
-                            eval.evaluateModel(mlp, dev);
-                            double currentPrecision = eval.precision(idxSpam);
-                            System.out.println("HL: "+h+" | LR: "+l+" | M: "+m+" | Epoch: "+e+" | Precision: "+currentPrecision);
-
-                            if (currentPrecision < bestPrecision){
-                                bestPrecision = currentPrecision;
-                                bestH = h;
-                                bestL = l;
-                                bestM = m;
-                                bestEpoch = e;
-                            }
-                        }
-                    }
-                }
-            }
-            balioParametroa[0] = bestH;
-            balioParametroa[1] = Double.toString(bestL);
-            balioParametroa[2] = Double.toString(bestM);
-            balioParametroa[3] = Integer.toString(bestEpoch);
-            System.out.println(" ------ PARAMETRO OPTIMOAK -------");
-            System.out.println("HL: "+bestH+" | LR: "+bestL+" | M: "+bestM+" | Epoch: "+bestEpoch+" | Precision: "+bestPrecision);
-            return balioParametroa;
-        } catch ( IOException e){
-            System.out.println("ERROREA: parametro ekorketa egitean.");
-            return null;
-        }
+        Evaluation eval = new Evaluation(train);
+        eval.evaluateModel(mlp, dev);
+        System.out.println(eval.toMatrixString());
+        System.out.println(eval.toClassDetailsString());
     }
 
-    public String[] parametroOptimoakLortuHoldOut(Instances[] arff) throws Exception{
+    public String[] parametroOptimoakLortu(Instances[] instantziak) throws Exception{
         try{
-            // Datu sorta oso bat sortu Train + Dev
-            Instances datuak1 = arff[0];
-            Instances datuak2 = arff[1];
-            Instances data = new Instances(datuak1);
-            data.addAll(datuak2);
+            Instances train = instantziak[0];
+            Instances dev = instantziak[1];
 
-            String[] balioParametroa = new String[4];
-            String[] hiddenLayersBalioak = {" ", "a", "o", "i", "5", "10", "20", "10, 5", "a, a"};
-            double[] learningRatesBalioak = {0.01,0.05, 0.1, 0.3};
+            System.out.println("======================================================");
+            System.out.println("              📊 PARAMETRO EKORKETA ");
+            System.out.println("======================================================");
+
+            String[] balioParametroa = new String[3];
+            String[] hiddenLayersBalioak = {"5", "15", "10, 5", "5, 5, 5"};
+            double[] learningRatesBalioak = {0.01, 0.05, 0.1, 0.2, 0.3};
             double[] momentumsBalioak = {0.1, 0.2};
             String bestH = "";
             Double bestL = 0.0;
             Double bestM = 0.0;
             Double bestPrecision = 0.0;
-            int bestEpoch = 0;
-            int e = 1;
 
             //Klase spam-aren indizea
             int idxSpam = 0;
-            for (String h : hiddenLayersBalioak){
+            int i = 1;
+
+            for (String h : hiddenLayersBalioak) {
                 for (Double l : learningRatesBalioak){
                     for (Double m : momentumsBalioak){
+
+                        System.out.println(i + " : proba abian dago. Ebaluazioa hurrengoa da:");
+                        i++;
                         MultilayerPerceptron mlp = new MultilayerPerceptron();
-                        mlp.setNominalToBinaryFilter(true);
-                        mlp.setDecay(true);
-                        mlp.setTrainingTime(1000);
+                        mlp.setNominalToBinaryFilter(true);  //Mirar que hace
+                        mlp.setSeed(42);
                         mlp.setHiddenLayers(h);
                         mlp.setLearningRate(l);
                         mlp.setMomentum(m);
 
-                        // EarlyStopping
-                        mlp.setValidationSetSize(10);  //Erreserbatutako % dev egiteko
-                        mlp.setValidationThreshold(20); //Errore margina stop egin arte
+                        mlp.setValidationSetSize(20);
+                        mlp.setValidationThreshold(5);
 
-                        mlp.buildClassifier(data);
+                        mlp.buildClassifier(train);
 
-                        Evaluation eval = new Evaluation(data);
-                        eval.evaluateModel(mlp, data);
+                        Evaluation eval = new Evaluation(train);
+                        eval.evaluateModel(mlp, dev);
                         double currentPrecision = eval.precision(idxSpam);
-                        System.out.println("HL: "+h+" | LR: "+l+" | M: "+m+" | Epoch: "+e+" | Precision: "+currentPrecision);
+                        System.out.println(" ----- PROBAKO PARAMETROAK -----");
+                        System.out.println("HL: "+h+" | LR: "+l+" | M: "+m);
+                        System.out.println(eval.toMatrixString());
+                        System.out.println(eval.toClassDetailsString());
 
-                        if (currentPrecision < bestPrecision){
+                        if (currentPrecision > bestPrecision){
                             bestPrecision = currentPrecision;
                             bestH = h;
                             bestL = l;
                             bestM = m;
-                            bestEpoch = e;
                         }
-                        e++;
                     }
                 }
             }
             balioParametroa[0] = bestH;
             balioParametroa[1] = Double.toString(bestL);
             balioParametroa[2] = Double.toString(bestM);
-            balioParametroa[3] = Integer.toString(bestEpoch);
             System.out.println(" ------ PARAMETRO OPTIMOAK -------");
-            System.out.println("HL: "+bestH+" | LR: "+bestL+" | M: "+bestM+" | Epoch: "+bestEpoch+" | Precision: "+bestPrecision);
+            System.out.println("HL: "+bestH+" | LR: "+bestL+" | M: "+bestM+" | Precision: "+bestPrecision);
             return balioParametroa;
         } catch ( IOException e){
             System.out.println("ERROREA: parametro ekorketa egitean.");
@@ -168,64 +138,55 @@ public class Sailkatzailea {
         }
     }
 
-    public Classifier sailkatzaileaKalitateaSortu(String[] parametroak, Instances train, Instances dev, String path) throws Exception{
+    public Classifier sailkatzaileaSortu(String[] parametroak, String trainPath, String devPath, String rawDataPath, String bekDataPath, String dicFilePath, String outputPath) throws Exception{
         try {
+            DataSource sourceTrain = new DataSource(trainPath);
+            Instances train = sourceTrain.getDataSet();
+            if (train.classIndex() == -1){
+                train.setClassIndex(train.numAttributes() - 1);
+            }
+            DataSource sourceDev = new DataSource(devPath);
+            Instances dev = sourceDev.getDataSet();
+            if (dev.classIndex() == -1){
+                dev.setClassIndex(dev.numAttributes() - 1);
+            }
+            Instances dataTotala = new Instances(train);
+            dataTotala.addAll(dev);
+
+            //Bektorizazioa
+            ArffSaver saver = new ArffSaver();
+            saver.setInstances(dataTotala);
+            saver.setFile(new File(rawDataPath));
+            saver.writeBatch();
+            dataProcessor.bektorizatu(rawDataPath, bekDataPath, dicFilePath, true);
+            DataSource sourceTotala = new DataSource(bekDataPath);
+            Instances bekDataTotala = sourceTotala.getDataSet();
+            if (bekDataTotala.classIndex() == -1){
+                bekDataTotala.setClassIndex(0);
+            }
+
+
             //.model finala sortu (Parametro hoberenekin)
             String hl = parametroak[0];
             Double lr = Double.parseDouble(parametroak[1]);
             Double m = Double.parseDouble(parametroak[2]);
-            int epoch = Integer.parseInt(parametroak[3]);
             MultilayerPerceptron mlp = new MultilayerPerceptron();
-            mlp.setNominalToBinaryFilter(true);
-            mlp.setDecay(true);
-            mlp.setTrainingTime(epoch);
             mlp.setHiddenLayers(hl);
             mlp.setLearningRate(lr);
             mlp.setMomentum(m);
 
-            // Train + Dev fusionatu
-            Instances trainDev = new Instances(train);
-            trainDev.addAll(dev);
-            mlp.buildClassifier(trainDev);
+            mlp.setValidationSetSize(20);
+            mlp.setValidationThreshold(5);
+
+            mlp.buildClassifier(dataTotala);
 
             //.model gorde entregatzeko
-            String outputPath = path;
             SerializationHelper.write(outputPath, mlp);
-            return null;
+            return mlp;
         } catch ( IOException e) {
             System.out.println("ERROREA: .model KalitateaEstimatzeko sortzean.");
             return null;
         }
     }
 
-    public Classifier sailkatzaileaFinalaSortu(String[] parametroak, Instances train, Instances dev, Instances test, String path) throws Exception{
-        try {
-            //.model finala sortu (Parametro hoberenekin)
-            String hl = parametroak[0];
-            Double lr = Double.parseDouble(parametroak[1]);
-            Double m = Double.parseDouble(parametroak[2]);
-            int epoch = Integer.parseInt(parametroak[3]);
-            MultilayerPerceptron mlp = new MultilayerPerceptron();
-            mlp.setNominalToBinaryFilter(true);
-            mlp.setDecay(true);
-            mlp.setTrainingTime(epoch);
-            mlp.setHiddenLayers(hl);
-            mlp.setLearningRate(lr);
-            mlp.setMomentum(m);
-
-            // Train + Dev + Test fusionatu
-            Instances trainDevTest = new Instances(train);
-            trainDevTest.addAll(dev);
-            trainDevTest.addAll(test);
-            mlp.buildClassifier(trainDevTest);
-
-            //.model gorde entregatzeko
-            String outputPath = path;
-            SerializationHelper.write(outputPath, mlp);
-            return null;
-        } catch ( IOException e) {
-            System.out.println("ERROREA: .model Entregatzeko sortzean.");
-            return null;
-        }
-    }
 }
