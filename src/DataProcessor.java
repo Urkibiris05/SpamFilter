@@ -28,8 +28,22 @@ import java.io.PrintWriter;
 import java.util.Random;
 import java.util.Scanner;
 
+/**
+ * SMSak Wekarekin sailkatzeko proiektuko aurreprozesatze eta analisi utilitateak.
+ *
+ * <p>Klase honek TXT->ARFF bihurketa-fluxua, instantzien analisia,
+ * testuaren bektorizazioa eta parametro/filtro bilaketa-esperimentuak biltzen ditu.</p>
+ */
 public class DataProcessor {
 
+    /**
+     * SMSen TXT fitxategi bat ARFF formatura bihurtzen du.
+     *
+     * @param pTxtPath sarrerako TXT fitxategiaren bidea
+     * @param pArffPath irteerako ARFF fitxategiaren bidea
+     * @param isClassBlind true bada, TXTak ez du klase-etiketarik ("?" gordetzen da)
+     * @throws Exception irakurketa/idazketa errorea gertatzen bada
+     */
     public void sms2Arff(String pTxtPath, String pArffPath, boolean isClassBlind) throws Exception {
         String txtPath = pTxtPath;
         String arffPath = pArffPath;
@@ -70,6 +84,13 @@ public class DataProcessor {
         }
     }
 
+    /**
+     * ARFF dataset baten oinarrizko estatistikak kontsolan erakusten ditu.
+     *
+     * @param dataPath aztertu beharreko ARFFaren bidea
+     * @param etapaIzena logerako etaparen izen deskribatzailea
+     * @throws Exception dataseta ezin bada kargatu
+     */
     public void instantziakAztertu(String dataPath, String etapaIzena) throws Exception {
         Instances data = new DataSource(dataPath).getDataSet();
 
@@ -77,7 +98,7 @@ public class DataProcessor {
         if (data.classIndex() == -1) data.setClassIndex(data.numAttributes() - 1);
 
         System.out.println("======================================================");
-        System.out.println("📊 DATU GORDINEN ANALISIA - ETAPA: " + etapaIzena.toUpperCase());
+        System.out.println(" DATU GORDINEN ANALISIA - ETAPA: " + etapaIzena.toUpperCase());
         System.out.println("======================================================");
         System.out.println("Instantzia kopuru osoa (SMS): " + data.numInstances());
         System.out.println("Atributuen kopurua (Zutabeak): " + data.numAttributes());
@@ -103,6 +124,15 @@ public class DataProcessor {
         System.out.println("======================================================\n");
     }
 
+    /**
+     * Testu-dataset bat bektorizatzen du eta, dagokionean, emaitzako ARFFa eta filtroa gordetzen ditu.
+     *
+     * @param rawDataPath sarrerako ARFFaren bidea (testu gordina)
+     * @param bekDataPath irteerako ARFF bektorizatuaren bidea
+     * @param filterModelPath MultiFilter serializatua gorde/kargatzeko bidea
+     * @param isTrain true bada filtroa entrenatu eta gorde; false bada dagoena berrerabili
+     * @throws Exception kargatzean, filtratzean edo irteera idaztean huts egiten bada
+     */
     public void bektorizatu(String rawDataPath, String bekDataPath, String filterModelPath, boolean isTrain) throws Exception {
         Instances rawData = new DataSource(rawDataPath).getDataSet();
         if (rawData.classIndex() == -1) rawData.setClassIndex(rawData.numAttributes() - 1);
@@ -175,12 +205,18 @@ public class DataProcessor {
     // PARAMETRO BILATZAILE AUTOMATIKOA - ESPERIMENTUAK
     // =========================================================================
 
+    /**
+     * Testu-errepresentazioaren eta tokenizazio/stemming konfigurazioen oinarrizko esperimentuak exekutatzen ditu.
+     *
+     * @param rawDataPath entrenamendurako ARFF gordinaren bidea
+     * @throws Exception datuak kargatzean edo filtroak aplikatzean erroreak badaude
+     */
     public void parametroBilatzailea(String rawDataPath) throws Exception {
         Instances rawData = new DataSource(rawDataPath).getDataSet();
         if (rawData.classIndex() == -1) rawData.setClassIndex(rawData.numAttributes() - 1);
 
         System.out.println("\n======================================================");
-        System.out.println("🚀 PARAMETRO BILATZAILE AUTOMATIKOA (ESPERIMENTUAK)");
+        System.out.println("PARAMETRO BILATZAILE AUTOMATIKOA (ESPERIMENTUAK)");
         System.out.println("======================================================\n");
 
         // ---------------------------------------------------------
@@ -286,7 +322,9 @@ public class DataProcessor {
     }
 
     /**
-     * Oinarrizko filtroa sortzen du, konfigurazio komunak ezarriz (minuskulak, stopwords...)
+     * Esperimentuetarako konfigurazio komunarekin StringToWordVector oinarrizko bat sortzen du.
+     *
+     * @return esperimentu bakoitzerako konfigura daitekeen oinarrizko filtroa
      */
     private StringToWordVector createBaseFilter() {
         StringToWordVector filter = new StringToWordVector();
@@ -302,7 +340,12 @@ public class DataProcessor {
     }
 
     /**
-     * Filtro bat aplikatzen du eta zuzenean InfoGain-a kalkulatzen du pantailaratzeko
+     * Bektorizazio-filtro bat aplikatu eta InfoGain bidez atributuen laburpena erakusten du.
+     *
+     * @param rawData sarrerako dataset gordina
+     * @param filter aplikatu beharreko bektorizazio-filtroa
+     * @param expName kontsolako trazetarako esperimentuaren izena
+     * @throws Exception filtratzeak edo atributuen ebaluazioak huts egiten badu
      */
     private void runAndEvaluate(Instances rawData, StringToWordVector filter, String expName) throws Exception {
         System.out.println("\n--- " + expName + " ---");
@@ -323,9 +366,11 @@ public class DataProcessor {
 
     }
 
-    // ---------------------------------------------------------
-    // InfoGain kalkulatzeko metodoa
-    // ---------------------------------------------------------
+    /**
+     * Klasea ez diren eta InfoGain handiena duten 10 atributuak inprimatzen ditu.
+     *
+     * @param data klase-atributua definituta duen dataset bektorizatua
+     */
     private void inprimatuTop10InfoGain(Instances data) {
         try {
             InfoGainAttributeEval eval = new InfoGainAttributeEval();
@@ -351,9 +396,16 @@ public class DataProcessor {
     }
 
     // =========================================================================
-    // 🚀 LABORATORIO V2: VECTORIZACIÓN + SELECCIÓN + MLP BASE
+    // LABORATORIO V2: VECTORIZACIÓN + SELECCIÓN + MLP BASE
     // =========================================================================
 
+    /**
+     * TRAIN/DEV gaineko atributu-hautaketako laborategia exekutatzen du, bektorizazio konfigurazio finkoarekin.
+     *
+     * @param rawTrainPath TRAIN ARFF gordinaren bidea
+     * @param rawDevPath DEV ARFF gordinaren bidea
+     * @throws Exception dataseten kargak huts egiten badu
+     */
     public void parametroBilatzaileaV2(String rawTrainPath, String rawDevPath) throws Exception {
         Instances trainRaw = new DataSource(rawTrainPath).getDataSet();
         if (trainRaw.classIndex() == -1) trainRaw.setClassIndex(trainRaw.numAttributes() - 1);
@@ -362,7 +414,7 @@ public class DataProcessor {
         if (devRaw.classIndex() == -1) devRaw.setClassIndex(devRaw.numAttributes() - 1);
 
         System.out.println("\n======================================================");
-        System.out.println("🚀 LABORATORIO V5: GRID SEARCH DE ATTRIBUTE SELECTION");
+        System.out.println("LABORATORIO V5: GRID SEARCH DE ATTRIBUTE SELECTION");
         System.out.println("======================================================\n");
 
         // --- 1. CONFIGURACIÓN BASE (Vectorización inamovible) ---
@@ -432,10 +484,14 @@ public class DataProcessor {
     }
 
     /**
-     * Aplica la vectorización, la selección de atributos (opcional) y evalúa un MLP.
-     */
-    /**
-     * Aplica la vectorización y selección DENTRO del Cross-Validation para evitar Data Leakage.
+     * Pipeline oso bat exekutatzen du: TRAIN bektorizatu, aukerako hautaketa aplikatu,
+     * MLP bat entrenatu eta DEVen ebaluatu, transformazio-iragazki bera erabiliz.
+     *
+     * @param trainRaw TRAIN dataset gordina
+     * @param devRaw DEV dataset gordina
+     * @param stwv bektorizazioaren oinarrizko filtroa
+     * @param asFilter atributu-hautaketako filtroa (null izan daiteke)
+     * @param nombrePrueba logetarako etiketa deskribatzailea
      */
     private void ejecutarPipelineCompleto(Instances trainRaw,
                                           Instances devRaw,
@@ -491,8 +547,8 @@ public class DataProcessor {
                 System.out.println("  [!] Aviso: No se encontraron las clases 'spam' o 'ham' con ese nombre exacto. Revisa mayúsculas/minúsculas.");
             }
 
-            System.out.println("\n  📊 RESULTADOS DETALLADOS (Sin Data Leakage):");
-            System.out.printf("     🎯 Accuracy (Precisión Global): %.2f%%\n", eval.pctCorrect());
+            System.out.println("\n  RESULTADOS DETALLADOS (Sin Data Leakage):");
+            System.out.printf("     Accuracy (Precisión Global): %.2f%%\n", eval.pctCorrect());
 
             if (spamIndex != -1 && hamIndex != -1) {
                 System.out.println("\n     [Métricas clase SPAM (El objetivo principal)]");
@@ -509,11 +565,11 @@ public class DataProcessor {
 
             System.out.println("\n" + eval.toMatrixString("     📉 MATRIZ DE CONFUSIÓN"));
 
-            System.out.println("     ⏱ Tiempo total del proceso: " + tiempoSegundos + " segundos.");
+            System.out.println("     Tiempo total del proceso: " + tiempoSegundos + " segundos.");
             System.out.println("------------------------------------------------------\n");
 
         } catch (Exception e) {
-            System.out.println("  ❌ Error en la prueba: " + e.getMessage());
+            System.out.println("  Error en la prueba: " + e.getMessage());
             e.printStackTrace();
         }
     }
