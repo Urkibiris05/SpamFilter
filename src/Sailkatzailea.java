@@ -48,6 +48,7 @@ public class Sailkatzailea {
         }
     }
 
+    //NO SABER COMO SE HACE
     public void erregresioLineala(Instances[] instantziak) throws Exception {
         Instances train = instantziak[0];
         Instances dev = instantziak[1];
@@ -98,14 +99,15 @@ public class Sailkatzailea {
                         System.out.println(i + " : proba abian dago. Ebaluazioa hurrengoa da:");
                         i++;
                         MultilayerPerceptron mlp = new MultilayerPerceptron();
-                        mlp.setNominalToBinaryFilter(true);  //Mirar que hace
+                        mlp.setNominalToBinaryFilter(false);
+                        //mlp.setNormalizeAttributes(true); // Aparicion datos (0-1)
                         mlp.setSeed(42);
                         mlp.setHiddenLayers(h);
                         mlp.setLearningRate(l);
                         mlp.setMomentum(m);
 
                         mlp.setValidationSetSize(20);
-                        mlp.setValidationThreshold(5);
+                        mlp.setValidationThreshold(15); //Numero de veces que no tiene que mejorar para que pare
 
                         mlp.buildClassifier(train);
 

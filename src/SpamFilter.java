@@ -18,9 +18,9 @@ public class SpamFilter {
         String dicFilePath = "src/data/txt/train_dictionary.txt";
 
         // dataProcessor.sms2Arff(rawTrainPath);
-        dataProcessor.bektorizatu(rawTrainPath, bekTrainPath, dicFilePath, true);
-        dataProcessor.bektorizatu(rawDevPath, bekDevPath, dicFilePath, false);
-        dataProcessor.bektorizatu(rawTestPath, bekTestPath, dicFilePath, false);
+        //dataProcessor.bektorizatu(rawTrainPath, bekTrainPath, dicFilePath, true);
+        //dataProcessor.bektorizatu(rawDevPath, bekDevPath, dicFilePath, false);
+        //dataProcessor.bektorizatu(rawTestPath, bekTestPath, dicFilePath, false);
         // dataProcessor.instantziakAztertu(bekTrainPath, "LEHEN FROGA");
         // dataProcessor.parametroBilatzailea(rawTrainPath);
 
@@ -29,7 +29,17 @@ public class SpamFilter {
         String[] parametroak = sailkatzailea.parametroOptimoakLortu(arff);
         */
 
+        String[] arff = new String[3];
+        arff[0] = bekTrainPath;
+        arff[1] = bekDevPath;
+        arff[2] = bekTestPath;
 
+        Instances[] instantziak = new Instances[3];
+        instantziak = sailkatzailea.arffKargatu(arff);
+        String[] parametroak = new String[4];
+        parametroak = sailkatzailea.parametroOptimoakLortu(instantziak);
+        //sailkatzailea.sailkatzaileaSortu(parametroak, rawTrainPath, rawDevPath, "/dicFIlePath", "outputPath");
+        //sailkatzailea.erregresioLineala(instantziak);
     }
 
 }
