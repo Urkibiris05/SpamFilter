@@ -159,12 +159,36 @@ public class SpamFilter {
             dataProcessor.sms2Arff(txtTestPath, rawTestPath, true);
         }
 
+        boolean erabiliStratifiedRepeatedHoldOut = eskatuBaiEz("Stratified Repeated Hold-Out erabili nahi duzu? (bai/ez)");
+        String metricsOutPath = eskatuLehenetsia("Metriken irteera path-a", "src/data/model/metrics.txt");
+
+        if (erabiliStratifiedRepeatedHoldOut) {
+            int repeats = Integer.parseInt(eskatuLehenetsia("Errepikapen kopurua", "10"));
+            double trainRatio = Double.parseDouble(eskatuLehenetsia("Train ratio (0-1)", "0.8"));
+            int seed = Integer.parseInt(eskatuLehenetsia("Hasierako hazia (seed)", "42"));
+            String tempDirPath = eskatuLehenetsia("Aldi baterako fitxategien karpeta", "src/data/tmp");
+
+            System.out.println("\n[SRHO] Stratified Repeated Hold-Out egiten...");
+            kalitateEstimazioa.stratifiedRepeatedHoldOut(
+                    rawTrainPath,
+                    rawDevPath,
+                    repeats,
+                    trainRatio,
+                    seed,
+                    tempDirPath,
+                    metricsOutPath
+            );
+
+            System.out.println("Pipeline osoa amaituta (SRHO modua).");
+            System.out.println(" - Metrikak: " + metricsOutPath);
+            return;
+        }
+
         String bekTrainPath = eskatuLehenetsia("BEK TRAIN ARFF path-a", "src/data/arff/SMS_SpamCollection.bektrain.arff");
         String bekDevPath = eskatuLehenetsia("BEK DEV ARFF path-a", "src/data/arff/SMS_SpamCollection.bekdev.arff");
         String bekTestPath = eskatuLehenetsia("BEK TEST ARFF path-a", "src/data/arff/SMS_SpamCollection.bektest_blind.arff");
         String multiFilterPath = eskatuLehenetsia("MultiFilter path-a", "src/data/model/multiFilter.model");
         String modelOutPath = eskatuLehenetsia("Azken model path-a", "src/data/model/final.model");
-        String metricsOutPath = eskatuLehenetsia("Metriken irteera path-a", "src/data/model/metrics.txt");
 
         System.out.println("\n[1/4] Raw datuak bektorizatzen...");
         dataProcessor.bektorizatu(rawTrainPath, bekTrainPath, multiFilterPath, true);
