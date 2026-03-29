@@ -103,28 +103,6 @@ public class DataProcessor {
         System.out.println("======================================================\n");
     }
 
-    public void bektorizazioaAztertu(String dataPath, String etapaIzena) throws Exception {
-        Instances data = new DataSource(dataPath).getDataSet();
-        if (data.classIndex() == -1) data.setClassIndex(0);
-
-        System.out.println("======================================================");
-        System.out.println("🔎 BEKTORIZAZIOAREN ANALISIA - ETAPA: " + etapaIzena.toUpperCase());
-        System.out.println("======================================================");
-
-        // Restamos 1 porque un atributo es la clase, el resto son palabras
-        int hiztegiTamaina = data.numAttributes() - 1;
-        System.out.println("Hiztegiaren tamaina (Sortutako hitzak): " + hiztegiTamaina);
-
-        // Análisis InfoGain (Solo si la clase tiene valores conocidos, en Test Blind no se puede)
-        if (data.classIndex() != -1 && data.numInstances() > 0 && !data.instance(0).isMissing(data.classIndex())) {
-            System.out.println("\nTop 10 atributu (hitz) onenak (Information Gain arabera):");
-            inprimatuTop10InfoGain(data);
-        } else {
-            System.out.println("\nEzin da InfoGain kalkulatu klaseak ez duelako baliorik (Test Blind da?).");
-        }
-        System.out.println("======================================================\n");
-    }
-
     public void bektorizatu(String rawDataPath, String bekDataPath, String filterModelPath, boolean isTrain) throws Exception {
         Instances rawData = new DataSource(rawDataPath).getDataSet();
         if (rawData.classIndex() == -1) rawData.setClassIndex(rawData.numAttributes() - 1);
