@@ -1,8 +1,6 @@
 import weka.classifiers.Classifier;
-import weka.classifiers.CostMatrix;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
-import weka.classifiers.meta.CostSensitiveClassifier;
 import weka.core.Instance;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
@@ -93,7 +91,6 @@ public class KalitateEstimazioa {
             pw.println("Stratified Repeated Hold-Out (raw train+dev)");
             pw.println("Repeats: " + repeats);
             pw.println("Train ratio: " + trainRatio);
-            pw.println("CostSensitive spam FN cost: 3.0");
             pw.println();
 
             for (int rep = 0; rep < repeats; rep++) {
@@ -126,8 +123,7 @@ public class KalitateEstimazioa {
                     parametroOptimoak = sailkatzailea.parametroOptimoakLortu(new Instances[]{trainBek, devBek, null});
                 }
 
-                Classifier baseMlp = sortuMLPParametroekin(parametroOptimoak);
-                Classifier mlp = sortuCostSensitive(baseMlp, trainBek, 3.0);
+                Classifier mlp = sortuMLPParametroekin(parametroOptimoak);
                 mlp.buildClassifier(trainBek);
 
                 Evaluation eval = new Evaluation(trainBek);
@@ -236,27 +232,6 @@ public class KalitateEstimazioa {
         mlp.setValidationSetSize(20);
         mlp.setValidationThreshold(15);
         return mlp;
-    }
-
-    private Classifier sortuCostSensitive(Classifier base, Instances trainData, double spamFnCost) {
-        int hamIdx = trainData.classAttribute().indexOfValue("ham");
-        int spamIdx = trainData.classAttribute().indexOfValue("spam");
-
-        if (hamIdx < 0 || spamIdx < 0) {
-            return base;
-        }
-
-        CostMatrix cm = new CostMatrix(trainData.numClasses());
-        cm.setElement(hamIdx, hamIdx, 0.0);
-        cm.setElement(spamIdx, spamIdx, 0.0);
-        cm.setElement(hamIdx, spamIdx, 1.0);
-        cm.setElement(spamIdx, hamIdx, spamFnCost);
-
-        CostSensitiveClassifier csc = new CostSensitiveClassifier();
-        csc.setClassifier(base);
-        csc.setCostMatrix(cm);
-        csc.setMinimizeExpectedCost(true);
-        return csc;
     }
 
 
