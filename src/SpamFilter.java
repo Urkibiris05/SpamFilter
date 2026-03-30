@@ -42,14 +42,19 @@ public class SpamFilter {
                         parametroBilatzaileaV2Interaktiboa();
                         break;
                     case "6":
-                        ereduOptimoaEntrenatuInteraktiboa();
+                        parametroEkorketaInteraktiboa();
                         break;
                     case "7":
-                        kalitateaEstimatuInteraktiboa();
+                        modeloOptimoaSortuInteraktiboa();
                         break;
                     case "8":
+                        kalitateaEstimatuInteraktiboa();
+                        break;
+                    /*case "9":
                         pipelineOsoaInteraktiboa();
                         break;
+
+                     */
                     case "0":
                         martxan = false;
                         System.out.println("Agur! Programa amaituta.");
@@ -71,9 +76,10 @@ public class SpamFilter {
         System.out.println("3) Bektorizatu datu sorta");
         System.out.println("4) Parametro bilatzailea (V1)");
         System.out.println("5) Parametro bilatzailea (V2)");
-        System.out.println("6) Eredu optimoa bilatu eta entrenatu");
-        System.out.println("7) Kalitate estimazioa (hold-out)");
-        System.out.println("8) Pipeline osoa (preprozesatu + bektorizatu + entrenatu + ebaluatu)");
+        System.out.println("6) Parametro Ekorketa");
+        System.out.println("7) Modelo optimoa sortu");
+        System.out.println("8) Kalitate estimazioa (hold-out)");
+        System.out.println("9) Pipeline osoa (preprozesatu + bektorizatu + entrenatu + ebaluatu)");
         System.out.println("0) Irten");
         System.out.println("=====================================================");
     }
@@ -110,10 +116,9 @@ public class SpamFilter {
         dataProcessor.parametroBilatzaileaV2(rawTrainPath, rawDevPath);
     }
 
-    private static void ereduOptimoaEntrenatuInteraktiboa() throws Exception {
+    private static void parametroEkorketaInteraktiboa() throws Exception {
         String bekTrainPath = eskatuTestua("Bektorizatutako TRAIN ARFF path-a");
         String bekDevPath = eskatuTestua("Bektorizatutako DEV ARFF path-a");
-        String modelOutPath = eskatuTestua("Modeloa gordetzeko path-a (.model)");
 
         String[] arff = new String[2];
         arff[0] = bekTrainPath;
@@ -121,15 +126,25 @@ public class SpamFilter {
 
         Instances[] instantziak = new Instances[2];
         instantziak = sailkatzailea.arffKargatu(arff);
+        sailkatzailea.parametroOptimoakLortu(instantziak);
+    }
 
-        Instances train =  instantziak[0];
-        Instances dev =  instantziak[1];
-        String[] parametroak = sailkatzailea.parametroOptimoakLortu(new Instances[]{train, dev, null});
-        //Classifier modeloa = sortuMLP(parametroak);
-        //modeloa.buildClassifier(train);
-        //SerializationHelper.write(modelOutPath, modeloa);
+    private static void modeloOptimoaSortuInteraktiboa() throws Exception {
+        String hl = eskatuTestua("HiddenLayers parametroa");
+        String lr = eskatuTestua("LearningRate parametroa");
+        String m = eskatuTestua("Momentum parametroa");
+        String[] parametroak = new String[3];
+        parametroak[0] = hl;
+        parametroak[1] = lr;
+        parametroak[2] = m;
+        String rawTrainPath = eskatuTestua("Raw TRAIN ARFF path-a");
+        String rawDevPath = eskatuTestua("Raw DEV ARFF path-a");
+        String rawDataPath = eskatuTestua("Raw DATA ARFF path-a");
+        String bekDataPath = eskatuTestua("Bek DATA ARFF path-a");
+        String filterModelPath = eskatuTestua("Filtro/modelo path-a (adib. multiFilter.model)");
+        String outputPath = eskatuTestua("Modelo optimoa gordetzeko path-a");
 
-        //System.out.println("Eredua entrenatu eta gordeta: " + modelOutPath);
+        sailkatzailea.sailkatzaileaSortu(parametroak, rawTrainPath, rawDevPath, rawDataPath, bekDataPath, filterModelPath, outputPath);
     }
 
     private static void kalitateaEstimatuInteraktiboa() throws Exception {
@@ -146,7 +161,7 @@ public class SpamFilter {
         System.out.println("Kalitate metrikak gordeta: " + metricsOutPath);
     }
 
-    private static void pipelineOsoaInteraktiboa() throws Exception {
+    /*private static void pipelineOsoaInteraktiboa() throws Exception {
         System.out.println("\n--- PIPELINE OSOA ---");
 
         boolean preprozesatu = eskatuBaiEz("TXT fitxategietatik ARFF sortu nahi duzu? (bai/ez)");
@@ -218,6 +233,7 @@ public class SpamFilter {
         System.out.println(" - Modeloa: " + modelOutPath);
         System.out.println(" - Metrikak: " + metricsOutPath);
     }
+     */
 
     //CUIDADO
     private static Instances kargatuInstantziak(String path) throws Exception {
@@ -229,7 +245,7 @@ public class SpamFilter {
     }
 
     //CUIDADO
-    private static Classifier sortuMLP(String[] parametroak) {
+    /*private static Classifier sortuMLP(String[] parametroak) {
         MultilayerPerceptron mlp = new MultilayerPerceptron();
         mlp.setNominalToBinaryFilter(false);
         mlp.setSeed(42);
@@ -240,7 +256,7 @@ public class SpamFilter {
         mlp.setValidationThreshold(15);
         return mlp;
     }
-
+    */
     private static String eskatuTestua(String mezua) {
         System.out.print(mezua + ": ");
         return scanner.nextLine().trim();

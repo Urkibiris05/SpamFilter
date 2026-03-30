@@ -84,11 +84,13 @@ public class Sailkatzailea {
                 for (Double l : learningRatesBalioak){
                     for (Double m : momentumsBalioak){
 
+                        long hasiera = System.nanoTime();
                         System.out.println(i + " : proba abian dago. Ebaluazioa hurrengoa da:");
                         i++;
                         MultilayerPerceptron mlp = new MultilayerPerceptron();
                         mlp.setNominalToBinaryFilter(false);
                         //mlp.setNormalizeAttributes(true); // Aparicion datos (0-1)
+                        //mlp.setDecay(true); //Reduce LR / Epoch
                         mlp.setSeed(42);
                         mlp.setHiddenLayers(h);
                         mlp.setLearningRate(l);
@@ -102,6 +104,9 @@ public class Sailkatzailea {
                         Evaluation eval = new Evaluation(train);
                         eval.evaluateModel(mlp, dev);
                         double currentPrecision = eval.precision(idxSpam);
+                        System.out.println(" ----- PROBAKO DENBORA -----");
+                        double segundoak = (System.nanoTime() - hasiera) / 1000000000.0;
+                        System.out.println("Exekuzioan emandako doenbora: "+segundoak);
                         System.out.println(" ----- PROBAKO PARAMETROAK -----");
                         System.out.println("HL: "+h+" | LR: "+l+" | M: "+m);
                         System.out.println(eval.toMatrixString());
@@ -128,7 +133,7 @@ public class Sailkatzailea {
         }
     }
 
-    public Classifier sailkatzaileaSortu(String[] parametroak, String trainPath, String devPath, String rawDataPath, String bekDataPath, String dicFilePath, String outputPath) throws Exception{
+    public void sailkatzaileaSortu(String[] parametroak, String trainPath, String devPath, String rawDataPath, String bekDataPath, String filterPath, String outputPath) throws Exception{
         try {
             DataSource sourceTrain = new DataSource(trainPath);
             Instances train = sourceTrain.getDataSet();
@@ -148,13 +153,12 @@ public class Sailkatzailea {
             saver.setInstances(dataTotala);
             saver.setFile(new File(rawDataPath));
             saver.writeBatch();
-            dataProcessor.bektorizatu(rawDataPath, bekDataPath, dicFilePath, true);
+            dataProcessor.bektorizatu(rawDataPath, bekDataPath, filterPath, true);
             DataSource sourceTotala = new DataSource(bekDataPath);
             Instances bekDataTotala = sourceTotala.getDataSet();
             if (bekDataTotala.classIndex() == -1){
-                bekDataTotala.setClassIndex(0);
+                bekDataTotala.setClassIndex(bekDataTotala.numAttributes()-1);
             }
-
 
             //.model finala sortu (Parametro hoberenekin)
             String hl = parametroak[0];
@@ -166,16 +170,16 @@ public class Sailkatzailea {
             mlp.setMomentum(m);
 
             mlp.setValidationSetSize(20);
-            mlp.setValidationThreshold(5);
+            mlp.setValidationThreshold(15);
 
-            mlp.buildClassifier(dataTotala);
+            mlp.buildClassifier(bekDataTotala);
 
-            //.model gorde entregatzeko
+            // .model gorde entregatzeko
             SerializationHelper.write(outputPath, mlp);
-            return mlp;
-        } catch ( IOException e) {
-            System.out.println("ERROREA: .model KalitateaEstimatzeko sortzean.");
-            return null;
+            System.out.println("[OK] Modeloa ondo gorde da hemen: " + outputPath);
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
