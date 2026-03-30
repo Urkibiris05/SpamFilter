@@ -5,11 +5,6 @@ import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
-import weka.core.stemmers.IteratedLovinsStemmer;
-import weka.core.stopwords.Rainbow;
-import weka.core.tokenizers.AlphabeticTokenizer;
-import weka.filters.Filter;
-import weka.filters.unsupervised.attribute.StringToWordVector;
 
 import java.io.File;
 import java.io.IOException;
@@ -19,28 +14,21 @@ public class Sailkatzailea {
 
     public Instances[] arffKargatu(String[] args) throws Exception{
         try {
-            Instances[] arff = new Instances[3];
+            Instances[] arff = new Instances[2];
             String trainFile = args[0];
             String devFile = args[1];
-            String testFile = args[2];
             DataSource sourceTrain = new DataSource(trainFile);
             Instances train = sourceTrain.getDataSet();
             if (train.classIndex() == -1){
-                train.setClassIndex(0);
+                train.setClassIndex(train.numAttributes() - 1);
             }
             arff[0] = train;
             DataSource sourceDev = new DataSource(devFile);
             Instances dev = sourceDev.getDataSet();
             if (dev.classIndex() == -1){
-                dev.setClassIndex(0);
+                dev.setClassIndex(dev.numAttributes() - 1);
             }
             arff[1] = dev;
-            DataSource sourceTest = new DataSource(testFile);
-            Instances test = sourceTest.getDataSet();
-            if (test.classIndex() == -1){
-                test.setClassIndex(0);
-            }
-            arff[2] = dev;
             return arff;
         } catch ( IOException e ) {
             System.out.println("ERROREA: arff fitxategiak kargatzen.");
@@ -80,7 +68,7 @@ public class Sailkatzailea {
             System.out.println("======================================================");
 
             String[] balioParametroa = new String[3];
-            String[] hiddenLayersBalioak = {"5", "15", "10, 5", "5, 5, 5"};
+            String[] hiddenLayersBalioak = {"5", "10", "15", "5,10", "10, 5", "5, 5, 5", "5,10,15", "15,10,5"};
             double[] learningRatesBalioak = {0.01, 0.05, 0.1, 0.2, 0.3};
             double[] momentumsBalioak = {0.1, 0.2};
             String bestH = "";

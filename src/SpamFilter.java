@@ -115,15 +115,21 @@ public class SpamFilter {
         String bekDevPath = eskatuTestua("Bektorizatutako DEV ARFF path-a");
         String modelOutPath = eskatuTestua("Modeloa gordetzeko path-a (.model)");
 
-        Instances train = kargatuInstantziak(bekTrainPath);
-        Instances dev = kargatuInstantziak(bekDevPath);
+        String[] arff = new String[2];
+        arff[0] = bekTrainPath;
+        arff[1] = bekDevPath;
 
+        Instances[] instantziak = new Instances[2];
+        instantziak = sailkatzailea.arffKargatu(arff);
+
+        Instances train =  instantziak[0];
+        Instances dev =  instantziak[1];
         String[] parametroak = sailkatzailea.parametroOptimoakLortu(new Instances[]{train, dev, null});
-        Classifier modeloa = sortuMLP(parametroak);
-        modeloa.buildClassifier(train);
-        SerializationHelper.write(modelOutPath, modeloa);
+        //Classifier modeloa = sortuMLP(parametroak);
+        //modeloa.buildClassifier(train);
+        //SerializationHelper.write(modelOutPath, modeloa);
 
-        System.out.println("Eredua entrenatu eta gordeta: " + modelOutPath);
+        //System.out.println("Eredua entrenatu eta gordeta: " + modelOutPath);
     }
 
     private static void kalitateaEstimatuInteraktiboa() throws Exception {
@@ -213,6 +219,7 @@ public class SpamFilter {
         System.out.println(" - Metrikak: " + metricsOutPath);
     }
 
+    //CUIDADO
     private static Instances kargatuInstantziak(String path) throws Exception {
         Instances data = new DataSource(path).getDataSet();
         if (data.classIndex() == -1) {
@@ -221,6 +228,7 @@ public class SpamFilter {
         return data;
     }
 
+    //CUIDADO
     private static Classifier sortuMLP(String[] parametroak) {
         MultilayerPerceptron mlp = new MultilayerPerceptron();
         mlp.setNominalToBinaryFilter(false);
