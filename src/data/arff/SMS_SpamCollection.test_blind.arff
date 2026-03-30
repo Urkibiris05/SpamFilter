@@ -1,7 +1,7 @@
 @relation sms_spam_proiektua
 
 @attribute Text string
-@attribute class {ham, spam}
+@attribute class_label {ham, spam}
 
 @data
 "Ok i also wan 2 watch e 9 pm show...",?
