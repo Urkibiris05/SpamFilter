@@ -117,12 +117,9 @@ public class SpamFilter {
     }
 
     private static void parametroEkorketaInteraktiboa() throws Exception {
-        String bekTrainPath = eskatuTestua("Bektorizatutako TRAIN ARFF path-a");
-        String bekDevPath = eskatuTestua("Bektorizatutako DEV ARFF path-a");
-
         String[] arff = new String[2];
-        arff[0] = bekTrainPath;
-        arff[1] = bekDevPath;
+        arff[0] = eskatuTestua("Bektorizatutako TRAIN ARFF path-a");
+        arff[1] = eskatuTestua("Bektorizatutako DEV ARFF path-a");
 
         Instances[] instantziak = new Instances[2];
         instantziak = sailkatzailea.arffKargatu(arff);
