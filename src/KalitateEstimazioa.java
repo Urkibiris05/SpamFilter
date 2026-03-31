@@ -1,31 +1,46 @@
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
-import weka.classifiers.functions.MultilayerPerceptron;
-import weka.core.Instance;
 import weka.core.Instances;
-import weka.core.SerializationHelper;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
 import weka.filters.supervised.instance.Resample;
-
 import java.io.File;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Locale;
-import java.util.Random;
 
 public class KalitateEstimazioa {
     private DataProcessor dataProcessor;
     private Sailkatzailea sailkatzailea;
 
+    /**
+     * Eraikitzailea.
+     *
+     * <p>Ebaluazio-fluxuan behar diren laguntzaileak hasieratzen ditu:
+     * bektorizaziorako {@link DataProcessor} eta sailkatzailearen utilitateetarako
+     * {@link Sailkatzailea}.</p>
+     */
     public KalitateEstimazioa() {
         this.dataProcessor = new DataProcessor();
         this.sailkatzailea = new Sailkatzailea();
     }
 
 
+    /**
+     * Ebaluazio ez-zintzoa exekutatzen du (train + dev multzo berdinean ebaluatuz).
+     *
+     * <p>Metodo honek datu-fuga eragin dezake eta, ondorioz, metrika optimistak ematea.
+     * Konparazio akademikorako edo baseline gisa erabil daiteke, baina ez da gomendagarria
+     * kalitate errealaren estimaziorako.</p>
+     *
+     * @param train entrenamendurako instantziak
+     * @param dev garapenerako instantziak
+     * @param mlp ebaluatu beharreko modeloa
+     * @param path metrikak idazteko irteerako fitxategiaren bidea
+     * @throws Exception ebaluazioan edo fitxategi-idazketan errorea badago
+     */
     public void ezZintzoa(Instances train, Instances dev, Classifier mlp, String path) throws Exception {
         System.out.println("Ez-zintzoa gauzatzen...");
 
@@ -42,6 +57,15 @@ public class KalitateEstimazioa {
     }
 
 
+    /**
+     * Hold-out ebaluazio estandarra egiten du.
+     *
+     * @param trainData entrenamendu multzoa (eredua aurrez entrenatuta dagoela suposatzen da)
+     * @param devData balidazio/garapen multzoa
+     * @param mlp ebaluatu beharreko modeloa
+     * @param path metrikak idazteko irteerako fitxategiaren bidea
+     * @throws Exception ebaluazioan edo fitxategi-idazketan errorea badago
+     */
     public void holdOut(Instances trainData, Instances devData,Classifier mlp, String path) throws Exception {
         System.out.println("Hold Out gauzatzen...");
 
@@ -57,6 +81,23 @@ public class KalitateEstimazioa {
     }
 
 
+    /**
+     * Stratified Repeated Hold-Out egiten du train+dev raw bateratuta.
+     *
+     * <p>Errepikapen bakoitzean prozesua hau da:
+     * split estratifikatua -> train/dev raw ARFF gordetzea -> train filtroz bektorizatzea
+     * -> dev multzoa filtro berarekin eraldatzea -> modeloa entrenatu eta ebaluatzea.</p>
+     *
+     * @param train hasierako train raw instantziak
+     * @param dev hasierako dev raw instantziak
+     * @param repeats errepikapen kopurua
+     * @param trainRatio split bakoitzean train proportzioa (0-1)
+     * @param seed ausazko hasierako hazia
+     * @param tempDirPath aldi baterako ARFF/model fitxategiak gordetzeko karpeta
+     * @param pathOut errepikapen eta batezbesteko metrikak idazteko fitxategia
+     * @param mlp errepikapen bakoitzean entrenatu eta ebaluatuko den modeloa
+     * @throws Exception split, bektorizazio, entrenamendu edo idazketan errorea badago
+     */
     public void stratifiedRepeatedHoldOut(Instances train, Instances dev, int repeats, double trainRatio, int seed, String tempDirPath, String pathOut, Classifier mlp) throws Exception {
 
         Instances dataTotala = new Instances(train);
@@ -138,6 +179,18 @@ public class KalitateEstimazioa {
     }
 
 
+    /**
+     * Resample filtroarekin train/dev split bat sortzen du ordezkapenik gabe.
+     *
+     * <p>Lehen pasean train zatia aukeratzen du; bigarrenean, {@code invertSelection=true}
+     * erabilita osagarria (dev zatia) lortzen da.</p>
+     *
+     * @param data zatitu beharreko datu-multzoa
+     * @param trainRatio train-erako proportzioa (0-1)
+     * @param seed ausazko hazia
+     * @return bi posizioko arraya: [0] train split, [1] dev split
+     * @throws Exception filtroaren exekuzioan errorea badago
+     */
     private Instances[] splitResample(Instances data, double trainRatio, int seed) throws Exception {
         Resample rs = new Resample();
         rs.setNoReplacement(true);
@@ -154,6 +207,13 @@ public class KalitateEstimazioa {
         return new Instances[]{trainSplit, devSplit};
     }
 
+    /**
+     * {@link Instances} objektu bat ARFF fitxategi gisa gordetzen du.
+     *
+     * @param data gorde beharreko instantziak
+     * @param outputPath irteerako ARFF fitxategiaren bidea
+     * @throws Exception idazketan errorea badago
+     */
     private void gordeArff(Instances data, String outputPath) throws Exception {
         ArffSaver saver = new ArffSaver();
         saver.setInstances(data);
@@ -162,6 +222,14 @@ public class KalitateEstimazioa {
     }
 
 
+    /**
+     * Spam klasearen metrika nagusiak fitxategi batera idazten ditu.
+     *
+     * @param eval egindako ebaluazioaren emaitza
+     * @param data erabilitako datu multzoa (une honetan ez da zuzenean erabiltzen)
+     * @param pathOut irteerako fitxategiaren bidea
+     * @throws Exception fitxategia sortu edo idaztean errorea badago
+     */
     private void metrikak(Evaluation eval, Instances data, String pathOut) throws Exception {
 
         int spamIdx = 1;
