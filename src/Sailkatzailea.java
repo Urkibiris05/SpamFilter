@@ -158,7 +158,7 @@ public class Sailkatzailea {
                 dataTotala.addAll(dev);
             }
 
-            //Bektorizazioa
+            // Bektorizazioa
             ArffSaver saver = new ArffSaver();
             saver.setInstances(dataTotala);
             saver.setFile(new File(rawDataPath));

@@ -1,7 +1,6 @@
 import weka.attributeSelection.*;
 import weka.classifiers.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
-import weka.classifiers.meta.FilteredClassifier;
 import weka.core.Attribute;
 import weka.core.AttributeStats;
 import weka.core.Instances;
@@ -10,7 +9,6 @@ import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.core.stemmers.IteratedLovinsStemmer;
 import weka.core.stemmers.LovinsStemmer;
-import weka.core.stemmers.SnowballStemmer;
 import weka.core.stemmers.Stemmer;
 import weka.core.stopwords.Rainbow;
 import weka.core.tokenizers.AlphabeticTokenizer;
@@ -20,12 +18,10 @@ import weka.core.tokenizers.WordTokenizer;
 import weka.filters.Filter;
 import weka.filters.MultiFilter;
 import weka.filters.supervised.attribute.AttributeSelection;
-import weka.filters.unsupervised.attribute.FixedDictionaryStringToWordVector;
 import weka.filters.unsupervised.attribute.StringToWordVector;
 
 import java.io.File;
 import java.io.PrintWriter;
-import java.util.Random;
 import java.util.Scanner;
 
 /**
@@ -84,6 +80,7 @@ public class DataProcessor {
         }
     }
 
+
     /**
      * ARFF dataset baten oinarrizko estatistikak kontsolan erakusten ditu.
      *
@@ -94,7 +91,7 @@ public class DataProcessor {
     public void instantziakAztertu(String dataPath, String etapaIzena) throws Exception {
         Instances data = new DataSource(dataPath).getDataSet();
 
-        // Asegurar que la clase está definida (suele ser el último atributo en los datos crudos)
+        // Klasea definituta dagoela ziurtatu (datu gordinetan azken atributua izan ohi da)
         if (data.classIndex() == -1) data.setClassIndex(data.numAttributes() - 1);
 
         System.out.println("======================================================");
@@ -103,7 +100,7 @@ public class DataProcessor {
         System.out.println("Instantzia kopuru osoa (SMS): " + data.numInstances());
         System.out.println("Atributuen kopurua (Zutabeak): " + data.numAttributes());
 
-        // Si hay clase y es nominal (Spam/Ham), mostramos la distribución
+        // Klasea badago eta nominala bada (Spam/Ham), banaketa erakutsi
         if (data.classIndex() != -1 && data.classAttribute().isNominal()) {
             System.out.println("Klase banaketa:");
             AttributeStats estatistikak = data.attributeStats(data.classIndex());
@@ -113,7 +110,7 @@ public class DataProcessor {
                 int kopurua = estatistikak.nominalCounts[i];
                 double ehunekoa = (double) kopurua / data.numInstances() * 100;
 
-                // Ignorar el valor "?" del Test Blind en el recuento si aparece
+                // Test Blind zenbaketan "?" balioa baztertu, agertzen bada
                 if (kopurua > 0 || !klaseaBalioa.equals("?")) {
                     System.out.printf("  - %s: %d instantzia (%.2f%%)\n", klaseaBalioa, kopurua, ehunekoa);
                 }
@@ -123,6 +120,7 @@ public class DataProcessor {
         }
         System.out.println("======================================================\n");
     }
+
 
     /**
      * Testu-dataset bat bektorizatzen du eta, dagokionean, emaitzako ARFFa eta filtroa gordetzen ditu.
@@ -198,7 +196,6 @@ public class DataProcessor {
 
         System.out.println("  [OK] ARFF fitxategia zuzen sortuta: " + bekDataPath + " (" + (bekData.numAttributes() - 1) + " atributos)");
     }
-
 
 
     // =========================================================================
@@ -321,6 +318,7 @@ public class DataProcessor {
         }
     }
 
+
     /**
      * Esperimentuetarako konfigurazio komunarekin StringToWordVector oinarrizko bat sortzen du.
      *
@@ -338,6 +336,7 @@ public class DataProcessor {
         filter.setWordsToKeep(Integer.MAX_VALUE);
         return filter;
     }
+
 
     /**
      * Bektorizazio-filtro bat aplikatu eta InfoGain bidez atributuen laburpena erakusten du.
@@ -366,6 +365,7 @@ public class DataProcessor {
 
     }
 
+
     /**
      * Klasea ez diren eta InfoGain handiena duten 10 atributuak inprimatzen ditu.
      *
@@ -379,11 +379,11 @@ public class DataProcessor {
             Ranker ranker = new Ranker();
             int[] topAtributuak = ranker.search(eval, data);
 
-            int inprimatzekoKopurua = Math.min(10, topAtributuak.length);
+            int inprimatzekoKopurua = Math.min(Integer.MAX_VALUE, topAtributuak.length);
             int count = 0;
             for (int i = 0; i < topAtributuak.length && count < inprimatzekoKopurua; i++) {
                 int attrIndex = topAtributuak[i];
-                if (attrIndex == data.classIndex()) continue; // Saltarnos la clase
+                if (attrIndex == data.classIndex()) continue; // Klasea saltatu
 
                 double infoGainBalioa = eval.evaluateAttribute(attrIndex);
                 String hitza = data.attribute(attrIndex).name();
@@ -395,8 +395,9 @@ public class DataProcessor {
         }
     }
 
+
     // =========================================================================
-    // LABORATORIO V2: VECTORIZACIÓN + SELECCIÓN + MLP BASE
+    // LABORATEGIA V2: BEKTORIZAZIOA + HAUTAKETA + MLP OINARRIA
     // =========================================================================
 
     /**
@@ -414,10 +415,10 @@ public class DataProcessor {
         if (devRaw.classIndex() == -1) devRaw.setClassIndex(devRaw.numAttributes() - 1);
 
         System.out.println("\n======================================================");
-        System.out.println("LABORATORIO V5: GRID SEARCH DE ATTRIBUTE SELECTION");
+        System.out.println("LABORATEGIA V2: ATTRIBUTE SELECTION GRID SEARCH");
         System.out.println("======================================================\n");
 
-        // --- 1. CONFIGURACIÓN BASE (Vectorización inamovible) ---
+        // --- 1. OINARRIZKO KONFIGURAZIOA (Bektorizazio finkoa) ---
         StringToWordVector stwv = new StringToWordVector();
         stwv.setLowerCaseTokens(true);
         stwv.setOutputWordCounts(true);
@@ -429,9 +430,9 @@ public class DataProcessor {
         stwv.setStopwordsHandler(new Rainbow());
 
         // =========================================================
-        // FAMILIA A: EVALUADORES INDIVIDUALES (Requieren Ranker)
+        // A FAMILIA: BANAKAKO EBALUATZAILEAK (Ranker behar dute)
         // =========================================================
-        System.out.println(">>> FAMILIA A: Evaluadores Individuales + Ranker <<<");
+        System.out.println(">>> A FAMILIA: Banakako Ebaluatzaileak + Ranker <<<");
 
         ASEvaluation[] singleEvals = {
                 new InfoGainAttributeEval(),
@@ -439,8 +440,8 @@ public class DataProcessor {
                 new SymmetricalUncertAttributeEval(),
                 new ReliefFAttributeEval()
         };
-        String[] singleNames = {"InfoGain", "GainRatio", "SymmetricalUncertainty", "ReliefF (Basado en instancias)"};
-        int[] topKValues = {100, 300, 500, 750, 1000}; // Probaremos a quedarnos con el Top 100 y Top 300
+        String[] singleNames = {"InfoGain", "GainRatio", "SymmetricalUncertainty", "ReliefF (Instantzietan oinarritua)"};
+        int[] topKValues = {100, 300, 500, 750, 1000}; 
 
         for (int i = 0; i < singleEvals.length; i++) {
             for (int k : topKValues) {
@@ -451,23 +452,23 @@ public class DataProcessor {
                 filterA.setEvaluator(singleEvals[i]);
                 filterA.setSearch(ranker);
 
-                String expName = "A - Eval: " + singleNames[i] + " | Búsqueda: Ranker (Top " + k + ")";
-                ejecutarPipelineCompleto(trainRaw, devRaw, stwv, filterA, expName);
+                String expName = "A - Eval: " + singleNames[i] + " | Bilaketa: Ranker (Top " + k + ")";
+                exekutatuPipelineOsoa(trainRaw, devRaw, stwv, filterA, expName);
             }
         }
 
         // =========================================================
-        // FAMILIA B: EVALUADORES DE SUBCONJUNTOS (CFS)
+        // B FAMILIA: AZPIMULTZO EBALUATZAILEAK (CFS)
         // =========================================================
-        System.out.println("\n>>> FAMILIA B: Evaluadores de Subconjuntos (CFS) + Búsquedas Complejas <<<");
+        System.out.println("\n>>> B FAMILIA: Azpimultzo Ebaluatzaileak (CFS) + Bilaketa Konplexuak <<<");
 
         CfsSubsetEval cfsEval = new CfsSubsetEval();
 
-        // 1. GreedyStepwise (Hacia adelante - Forward)
+        // 1. GreedyStepwise (Aurrerantz - Forward)
         GreedyStepwise greedyForward = new GreedyStepwise();
         greedyForward.setSearchBackwards(false);
 
-        // 2. BestFirst (Busca en varias direcciones saltando ramas)
+        // 2. BestFirst (Adarretan salto eginez hainbat norabidetan bilatzen du)
         BestFirst bestFirst = new BestFirst();
 
         ASSearch[] subsetSearches = {greedyForward, bestFirst};
@@ -478,10 +479,11 @@ public class DataProcessor {
             filterB.setEvaluator(cfsEval);
             filterB.setSearch(subsetSearches[j]);
 
-            String expName = "B - Eval: CFS | Búsqueda: " + searchNames[j];
-            ejecutarPipelineCompleto(trainRaw, devRaw, stwv, filterB, expName);
+            String expName = "B - Eval: CFS | Bilaketa: " + searchNames[j];
+            exekutatuPipelineOsoa(trainRaw, devRaw, stwv, filterB, expName);
         }
     }
+
 
     /**
      * Pipeline oso bat exekutatzen du: TRAIN bektorizatu, aukerako hautaketa aplikatu,
@@ -491,85 +493,93 @@ public class DataProcessor {
      * @param devRaw DEV dataset gordina
      * @param stwv bektorizazioaren oinarrizko filtroa
      * @param asFilter atributu-hautaketako filtroa (null izan daiteke)
-     * @param nombrePrueba logetarako etiketa deskribatzailea
+     * @param probaIzena logetarako etiketa deskribatzailea
      */
-    private void ejecutarPipelineCompleto(Instances trainRaw,
-                                          Instances devRaw,
-                                          StringToWordVector stwv,
-                                          AttributeSelection asFilter,
-                                          String nombrePrueba) {
+    private void exekutatuPipelineOsoa(Instances trainRaw,
+                                       Instances devRaw,
+                                       StringToWordVector stwv,
+                                       AttributeSelection asFilter,
+                                       String probaIzena) {
         try {
-            System.out.println("\n▶ INICIANDO: " + nombrePrueba);
+            System.out.println("\n▶ ABIARAZTEN: " + probaIzena);
             long startTime = System.currentTimeMillis();
 
-            // 1. APLICAR FILTROS SOLO AL TRAIN (Aprender el vocabulario)
-            System.out.println("  [1/3] Vectorizando y seleccionando atributos en TRAIN...");
+            // 1. IRAGAZKIAK TRAINen BAKARRIK APLIKATU (hiztegia ikasteko)
+            System.out.println("  [1/3] TRAINen bektorizatzen eta atributuak hautatzen...");
             stwv.setInputFormat(trainRaw);
-            Instances trainVectorizado = Filter.useFilter(trainRaw, stwv);
-            Instances trainFinal = trainVectorizado;
+            Instances trainBektorizatua = Filter.useFilter(trainRaw, stwv);
+            Instances trainFinal = trainBektorizatua;
 
             if (asFilter != null) {
-                asFilter.setInputFormat(trainVectorizado);
-                trainFinal = Filter.useFilter(trainVectorizado, asFilter);
+                asFilter.setInputFormat(trainBektorizatua);
+                trainFinal = Filter.useFilter(trainBektorizatua, asFilter);
             }
 
-            int numAtributos = trainFinal.numAttributes() - 1;
-            System.out.println("  [ℹ] Tamaño del diccionario REAL seleccionado: " + numAtributos + " atributos.");
+            int atributuKopurua = trainFinal.numAttributes() - 1;
+            System.out.println("  [ℹ] Hautatutako BENETAKO hiztegi-tamaina: " + atributuKopurua + " atributu.");
 
-            // 2. Crear el clasificador final (MLP)
-            System.out.println("  [2/3] Entrenando Multilayer Perceptron con TRAIN...");
+            // 2. Azken sailkatzailea sortu (MLP)
+            System.out.println("  [2/3] Multilayer Perceptron TRAINekin entrenatzen...");
             MultilayerPerceptron mlp = new MultilayerPerceptron();
             mlp.setHiddenLayers("5");
             mlp.setLearningRate(0.1);
             mlp.setMomentum(0.1);
             mlp.buildClassifier(trainFinal);
 
-            // 3. PASAR EL DEV POR EL MISMO EMBUDO (Aplicar diccionario)
-            System.out.println("  [3/3] Evaluando modelo con DEV...");
-            Instances devVectorizado = Filter.useFilter(devRaw, stwv);
-            Instances devFinal = devVectorizado;
+            // 3. DEV bide beretik pasatu (hiztegia aplikatu)
+            System.out.println("  [3/3] Eredua DEVekin ebaluatzen...");
+            Instances devBektorizatua = Filter.useFilter(devRaw, stwv);
+            Instances devFinal = devBektorizatua;
             if (asFilter != null) {
-                devFinal = Filter.useFilter(devVectorizado, asFilter);
+                devFinal = Filter.useFilter(devBektorizatua, asFilter);
             }
 
-            // 4. Evaluar con Cross-Validation usando los DATOS CRUDOS (Raw Data)
+            // 4. DATU GORDINAK erabilita ebaluatu (Raw Data)
             Evaluation eval = new Evaluation(trainFinal);
             eval.evaluateModel(mlp, devFinal);
 
             long endTime = System.currentTimeMillis();
-            long tiempoSegundos = (endTime - startTime) / 1000;
+            long denboraSegundoak = (endTime - startTime) / 1000;
 
-            // Extraer índices de las clases (asegúrate de que los nombres coinciden con tu .arff)
+            // Klaseen indizeak atera
             int spamIndex = trainFinal.classAttribute().indexOfValue("spam");
             int hamIndex = trainFinal.classAttribute().indexOfValue("ham");
 
             if (spamIndex == -1 || hamIndex == -1) {
-                System.out.println("  [!] Aviso: No se encontraron las clases 'spam' o 'ham' con ese nombre exacto. Revisa mayúsculas/minúsculas.");
+                System.out.println("  [!] Ez dira 'spam' edo 'ham' klaseak aurkitu izen zehatz horrekin. Begiratu maiuskula/minuskulak.");
             }
 
-            System.out.println("\n  RESULTADOS DETALLADOS (Sin Data Leakage):");
-            System.out.printf("     Accuracy (Precisión Global): %.2f%%\n", eval.pctCorrect());
+            System.out.println("\n  EMAITZA XEHATUAK (Data Leakagerik gabe):");
+            System.out.printf("     Accuracy: %.2f%%\n", eval.pctCorrect());
 
             if (spamIndex != -1 && hamIndex != -1) {
-                System.out.println("\n     [Métricas clase SPAM (El objetivo principal)]");
-                System.out.printf("      - Precision: %.4f (De todos los que marqué como Spam, ¿cuántos lo eran de verdad?)\n", eval.precision(spamIndex));
-                System.out.printf("      - Recall:    %.4f (De todos los Spam reales que había, ¿cuántos logré cazar?)\n", eval.recall(spamIndex));
-                System.out.printf("      - F-Measure: %.4f (Media armónica entre Precision y Recall)\n", eval.fMeasure(spamIndex));
-                System.out.printf("      - AUC (ROC): %.4f (Área bajo la curva. >0.95 es excelente)\n", eval.areaUnderROC(spamIndex));
+                System.out.println("\n     [SPAM klasearen metrikak]");
+                System.out.printf("      - Precision: %.4f (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)\n", eval.precision(spamIndex));
+                System.out.printf("      - Recall:    %.4f (Benetako Spam guztietatik, zenbat harrapatu ditut?)\n", eval.recall(spamIndex));
+                System.out.printf("      - F-Measure: %.4f (Precision eta Recall arteko batezbesteko harmonikoa)\n", eval.fMeasure(spamIndex));
+                System.out.printf("      - AUC (ROC): %.4f (Kurbaren azpiko azalera. >0.95 bikaina da)\n", eval.areaUnderROC(spamIndex));
 
-                System.out.println("\n     [Métricas clase HAM (Mensajes legítimos)]");
+                System.out.println("\n     [HAM klasearen metrikak (mezu legitimoak)]");
                 System.out.printf("      - Precision: %.4f\n", eval.precision(hamIndex));
                 System.out.printf("      - Recall:    %.4f\n", eval.recall(hamIndex));
                 System.out.printf("      - F-Measure: %.4f\n", eval.fMeasure(hamIndex));
             }
 
-            System.out.println("\n" + eval.toMatrixString("     📉 MATRIZ DE CONFUSIÓN"));
+            System.out.println("\n" + eval.toMatrixString("     NAHASMEN-MATRIZEA"));
 
-            System.out.println("     Tiempo total del proceso: " + tiempoSegundos + " segundos.");
+            System.out.println("     Prozesuaren denbora osoa: " + denboraSegundoak + " segundo.");
             System.out.println("------------------------------------------------------\n");
 
+            /*
+            File infoGainOutput = new File("/home/urkibiris/outputFrogak/+"+probaIzena+".txt");
+            infoGainOutput.createNewFile();
+            PrintWriter out = new PrintWriter(infoGainOutput);
+            inprimatuTop10InfoGain(trainFinal);
+            */
+
+
         } catch (Exception e) {
-            System.out.println("  Error en la prueba: " + e.getMessage());
+            System.out.println("  Errorea proban: " + e.getMessage());
             e.printStackTrace();
         }
     }

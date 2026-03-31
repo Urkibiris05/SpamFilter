@@ -202,7 +202,7 @@ public class SpamFilter {
 
     /*private static void pipelineOsoaInteraktiboa() throws Exception {
         System.out.println("\n--- PIPELINE OSOA ---");
-
+5
         boolean preprozesatu = eskatuBaiEz("TXT fitxategietatik ARFF sortu nahi duzu? (bai/ez)");
 
         String rawTrainPath = eskatuLehenetsia("Raw TRAIN ARFF path-a", "src/data/arff/SMS_SpamCollection.train.arff");
