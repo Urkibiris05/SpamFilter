@@ -71,7 +71,6 @@ public class KalitateEstimazioa {
         double pSum = 0.0;
         double rSum = 0.0;
         double fSum = 0.0;
-        String[] parametroOptimoak = null;
 
 
         try (PrintWriter pw = new PrintWriter(new File(pathOut))) {
@@ -104,6 +103,8 @@ public class KalitateEstimazioa {
                 Instances devBek = new DataSource(repBekDevPath).getDataSet();
                 if (trainBek.classIndex() == -1) trainBek.setClassIndex(trainBek.numAttributes() - 1);
                 if (devBek.classIndex() == -1) devBek.setClassIndex(devBek.numAttributes() - 1);
+
+                mlp.buildClassifier(trainBek);
 
                 Evaluation eval = new Evaluation(trainBek);
                 eval.evaluateModel(mlp, devBek);

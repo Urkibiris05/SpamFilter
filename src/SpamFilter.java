@@ -161,34 +161,44 @@ public class SpamFilter {
     }
 
     private static void kalitateaEstimatuInteraktiboa() throws Exception {
-        String bekTrainPath = eskatuTestua("Bektorizatutako TRAIN ARFF path-a");
-        String bekDevPath = eskatuTestua("Bektorizatutako DEV ARFF path-a");
         String modelPath = eskatuTestua("Kargatu beharreko model path-a (.model)");
         String metricsOutPath = eskatuTestua("Metrikak gordetzeko fitxategia");
 
-
-        Instances train = kargatuInstantziak(bekTrainPath);
-        Instances dev = kargatuInstantziak(bekDevPath);
+        boolean erabiliStratifiedRepeatedHoldOut = eskatuBaiEz("Stratified Repeated Hold-Out erabili nahi duzu? (bai/ez)");
         Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
-        boolean erabiliEzZintzoa = eskatuBaiEz("Ez zintzoa erabili nahi duzu? (bai/ez)");
-        if(erabiliEzZintzoa){
-            kalitateEstimazioa.ezZintzoa(train, dev, modeloa, metricsOutPath);
+
+        if (erabiliStratifiedRepeatedHoldOut) {
+
+            String trainPath = eskatuTestua("TRAIN ARFF path-a");
+            String devPath = eskatuTestua("DEV ARFF path-a");
+
+            Instances train = kargatuInstantziak(trainPath);
+            Instances dev = kargatuInstantziak(devPath);
+
+            int repeats = Integer.parseInt(eskatuLehenetsia("Errepikapen kopurua", "10"));
+            Double ratio = Double.parseDouble(eskatuLehenetsia("Train ratio (0-1)", "0.8"));
+            System.out.println("Datuen split bakoitza karpeta tenporal batean gordeko da (src/data/tmp) ");
+
+            kalitateEstimazioa.stratifiedRepeatedHoldOut(train, dev,repeats, ratio,42,"src/data/tmp",metricsOutPath,modeloa);
         }
-        else{
-            boolean erabiliStratifiedRepeatedHoldOut = eskatuBaiEz("Stratified Repeated Hold-Out erabili nahi duzu? (bai/ez)");
-            if (erabiliStratifiedRepeatedHoldOut) {
-                int repeats = Integer.parseInt(eskatuLehenetsia("Errepikapen kopurua", "10"));
-                Double ratio = Double.parseDouble(eskatuLehenetsia("Train ratio (0-1)", "0.8"));
-                System.out.println("Datuen split bakoitza karpeta tenporal batean gordeko da (src/data/tmp) ");
-                kalitateEstimazioa.stratifiedRepeatedHoldOut(train, dev,repeats, ratio,42,"src/data/tmp",metricsOutPath,modeloa);
-            }
-            else {
-                kalitateEstimazioa.holdOut(train, dev, modeloa, metricsOutPath);
+        else {
+
+            String bekTrainPath = eskatuTestua("Bektorizatutako TRAIN ARFF path-a");
+            String bekDevPath = eskatuTestua("Bektorizatutako DEV ARFF path-a");
+
+            Instances trainBek = kargatuInstantziak(bekTrainPath);
+            Instances devBek = kargatuInstantziak(bekDevPath);
+
+            boolean erabiliEzZintzoa = eskatuBaiEz("Ez zintzoa erabili nahi duzu? (bai/ez)");
+            if (erabiliEzZintzoa) {
+                kalitateEstimazioa.ezZintzoa(trainBek, devBek, modeloa, metricsOutPath);
+            } else {
+                kalitateEstimazioa.holdOut(trainBek, devBek, modeloa, metricsOutPath);
                 System.out.println("Kalitate metrikak gordeta: " + metricsOutPath);
             }
         }
-
     }
+
 
     /*private static void pipelineOsoaInteraktiboa() throws Exception {
         System.out.println("\n--- PIPELINE OSOA ---");
