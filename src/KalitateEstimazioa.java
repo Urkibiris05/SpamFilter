@@ -25,17 +25,6 @@ public class KalitateEstimazioa {
         this.sailkatzailea = new Sailkatzailea();
     }
 
-    public Classifier sailkatzaileEstandarraSortu(Instances trainData) throws Exception {
-        System.out.println("MLP sortzen...");
-
-        MultilayerPerceptron mlp = new MultilayerPerceptron();
-        mlp.setLearningRate(0.05);
-        mlp.setMomentum(0.1);
-        mlp.setHiddenLayers("5");
-        mlp.setBatchSize("100");
-
-        return mlp;
-    }
 
     public void ezZintzoa(Instances train, Instances dev, Classifier mlp, String path) throws Exception {
         System.out.println("Ez-zintzoa gauzatzen...");
@@ -66,26 +55,16 @@ public class KalitateEstimazioa {
         System.out.println(eval.toMatrixString("\n=== Confusion Matrix ===\n"));
         metrikak(eval, trainData, path);
     }
-    public void stratifiedRepeatedHoldOut(String rawTrainPath, String rawDevPath, int repeats, double trainRatio, int seed, String tempDirPath, String pathOut, Classifier mlp) throws Exception {
 
-        DataSource sourceTrain = new DataSource(rawTrainPath);
-        Instances train = sourceTrain.getDataSet();
-        if (train.classIndex() == -1) {
-            train.setClassIndex(train.numAttributes() - 1);
-        }
 
-        DataSource sourceDev = new DataSource(rawDevPath);
-        Instances dev = sourceDev.getDataSet();
-        if (dev.classIndex() == -1) {
-            dev.setClassIndex(dev.numAttributes() - 1);
-        }
+    public void stratifiedRepeatedHoldOut(Instances train, Instances dev, int repeats, double trainRatio, int seed, String tempDirPath, String pathOut, Classifier mlp) throws Exception {
 
         Instances dataTotala = new Instances(train);
         dataTotala.addAll(dev);
         if (dataTotala.classIndex() == -1) {
             dataTotala.setClassIndex(dataTotala.numAttributes() - 1);
         }
-
+        //Direktorio tenporala sortzeko
         Path tempDir = Path.of(tempDirPath);
         Files.createDirectories(tempDir);
 
@@ -103,7 +82,7 @@ public class KalitateEstimazioa {
 
             for (int rep = 0; rep < repeats; rep++) {
                 long repSeed = (long) seed + rep;
-                // Repeated hold-out con Resample sin reemplazo.
+
                 Instances[] split = splitResample(dataTotala, trainRatio, (int) repSeed);
                 Instances rawSplitTrain = split[0];
                 Instances rawSplitDev = split[1];
@@ -126,16 +105,10 @@ public class KalitateEstimazioa {
                 if (trainBek.classIndex() == -1) trainBek.setClassIndex(trainBek.numAttributes() - 1);
                 if (devBek.classIndex() == -1) devBek.setClassIndex(devBek.numAttributes() - 1);
 
-
-
                 Evaluation eval = new Evaluation(trainBek);
                 eval.evaluateModel(mlp, devBek);
 
-                int spamIdx = trainBek.classAttribute().indexOfValue("spam");
-                if (spamIdx < 0) {
-                    throw new IllegalArgumentException("'spam' klasea ez da aurkitu dataset-ean");
-                }
-
+                int spamIdx = 1;
 
                 double p = eval.precision(spamIdx);
                 double r = eval.recall(spamIdx);
@@ -163,57 +136,19 @@ public class KalitateEstimazioa {
         }
     }
 
-    private Instances[] splitEstratifikatua(Instances data, double trainRatio, long seed) {
-        Instances trainSplit = new Instances(data, 0);
-        Instances devSplit = new Instances(data, 0);
-
-        Random random = new Random(seed);
-        for (int classIdx = 0; classIdx < data.numClasses(); classIdx++) {
-            Instances classSubset = new Instances(data, 0);
-            for (int i = 0; i < data.numInstances(); i++) {
-                Instance inst = data.instance(i);
-                if ((int) inst.classValue() == classIdx) {
-                    classSubset.add(inst);
-                }
-            }
-
-            classSubset.randomize(random);
-            // No replacement
-            int trainCount = (int) Math.round(classSubset.numInstances() * trainRatio);
-            if (classSubset.numInstances() > 1) {
-                trainCount = Math.max(1, Math.min(trainCount, classSubset.numInstances() - 1));
-            }
-
-            for (int i = 0; i < classSubset.numInstances(); i++) {
-                if (i < trainCount) {
-                    trainSplit.add(classSubset.instance(i));
-                } else {
-                    devSplit.add(classSubset.instance(i));
-                }
-            }
-        }
-
-        trainSplit.randomize(random);
-        devSplit.randomize(random);
-        return new Instances[]{trainSplit, devSplit};
-    }
 
     private Instances[] splitResample(Instances data, double trainRatio, int seed) throws Exception {
-        Resample trainResample = new Resample();
-        trainResample.setNoReplacement(true);
-        trainResample.setInvertSelection(false);
-        trainResample.setRandomSeed(seed);
-        trainResample.setSampleSizePercent(trainRatio * 100.0);
-        trainResample.setInputFormat(data);
-        Instances trainSplit = Filter.useFilter(data, trainResample);
+        Resample rs = new Resample();
+        rs.setNoReplacement(true);
+        rs.setInvertSelection(false);
+        rs.setRandomSeed(seed);
+        rs.setSampleSizePercent(trainRatio * 100.0);
+        rs.setInputFormat(data);
+        Instances trainSplit = Filter.useFilter(data, rs);
 
-        Resample devResample = new Resample();
-        devResample.setNoReplacement(true);
-        devResample.setInvertSelection(true);
-        devResample.setRandomSeed(seed);
-        devResample.setSampleSizePercent(trainRatio * 100.0);
-        devResample.setInputFormat(data);
-        Instances devSplit = Filter.useFilter(data, devResample);
+        rs.setInvertSelection(true);
+        rs.setInputFormat(data);
+        Instances devSplit = Filter.useFilter(data, rs);
 
         return new Instances[]{trainSplit, devSplit};
     }
@@ -223,26 +158,6 @@ public class KalitateEstimazioa {
         saver.setInstances(data);
         saver.setFile(new File(outputPath));
         saver.writeBatch();
-    }
-
-    private Classifier sortuMLPParametroekin(String[] parametroak) {
-        MultilayerPerceptron mlp = new MultilayerPerceptron();
-        mlp.setSeed(42);
-
-        // Sailkatzailea.sailkatzaileaSortu-n erabiltzen diren parametro berdinak aplikatu
-        if (parametroak != null && parametroak.length >= 3) {
-            mlp.setHiddenLayers(parametroak[0]);
-            mlp.setLearningRate(Double.parseDouble(parametroak[1]));
-            mlp.setMomentum(Double.parseDouble(parametroak[2]));
-        } else {
-            mlp.setHiddenLayers("5");
-            mlp.setLearningRate(0.05);
-            mlp.setMomentum(0.1);
-        }
-
-        mlp.setValidationSetSize(20);
-        mlp.setValidationThreshold(15);
-        return mlp;
     }
 
 
