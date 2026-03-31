@@ -137,16 +137,26 @@ public class Sailkatzailea {
         try {
             DataSource sourceTrain = new DataSource(trainPath);
             Instances train = sourceTrain.getDataSet();
-            if (train.classIndex() == -1){
+            if (train.classIndex() == -1) {
                 train.setClassIndex(train.numAttributes() - 1);
             }
-            DataSource sourceDev = new DataSource(devPath);
-            Instances dev = sourceDev.getDataSet();
-            if (dev.classIndex() == -1){
-                dev.setClassIndex(dev.numAttributes() - 1);
+            boolean devBai = true;
+            Instances dev = null;
+            if (devPath.equals("")) {
+                devBai = false;
             }
+            if (devBai) {
+                DataSource sourceDev = new DataSource(devPath);
+                    dev = sourceDev.getDataSet();
+                if (dev.classIndex() == -1) {
+                    dev.setClassIndex(dev.numAttributes() - 1);
+                }
+            }
+
             Instances dataTotala = new Instances(train);
-            dataTotala.addAll(dev);
+            if (devBai && dev != null) {
+                dataTotala.addAll(dev);
+            }
 
             //Bektorizazioa
             ArffSaver saver = new ArffSaver();
@@ -165,6 +175,8 @@ public class Sailkatzailea {
             Double lr = Double.parseDouble(parametroak[1]);
             Double m = Double.parseDouble(parametroak[2]);
             MultilayerPerceptron mlp = new MultilayerPerceptron();
+            mlp.setNominalToBinaryFilter(false);
+            mlp.setSeed(42);
             mlp.setHiddenLayers(hl);
             mlp.setLearningRate(lr);
             mlp.setMomentum(m);

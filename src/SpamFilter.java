@@ -150,12 +150,27 @@ public class SpamFilter {
         String modelPath = eskatuTestua("Kargatu beharreko model path-a (.model)");
         String metricsOutPath = eskatuTestua("Metrikak gordetzeko fitxategia");
 
+
         Instances train = kargatuInstantziak(bekTrainPath);
         Instances dev = kargatuInstantziak(bekDevPath);
         Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
-
-        kalitateEstimazioa.holdOut(train, dev, modeloa, metricsOutPath);
-        System.out.println("Kalitate metrikak gordeta: " + metricsOutPath);
+        boolean erabiliStratifiedRepeatedHoldOut = eskatuBaiEz("Stratified Repeated Hold-Out erabili nahi duzu? (bai/ez)");
+        if (erabiliStratifiedRepeatedHoldOut) {
+            kalitateEstimazioa.stratifiedRepeatedHoldOut(
+                    bekTrainPath,
+                    bekDevPath,
+                    10, // repeats
+                    0.8, // train ratio
+                    42, // seed
+                    "src/data/tmp", // temp dir path
+                    metricsOutPath,
+                    modeloa
+            );;
+        }
+        else {
+            kalitateEstimazioa.holdOut(train, dev, modeloa, metricsOutPath);
+            System.out.println("Kalitate metrikak gordeta: " + metricsOutPath);
+        }
     }
 
     /*private static void pipelineOsoaInteraktiboa() throws Exception {

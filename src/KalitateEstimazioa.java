@@ -3,6 +3,7 @@ import weka.classifiers.Evaluation;
 import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instance;
 import weka.core.Instances;
+import weka.core.SerializationHelper;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
 import weka.filters.Filter;
@@ -37,13 +38,11 @@ public class KalitateEstimazioa {
     }
 
 
-    public void holdOut(Instances trainData, Instances devData, Classifier mlp, String path) throws Exception {
+    public void holdOut(Instances trainData, Instances devData,Classifier mlp, String path) throws Exception {
         System.out.println("Hold Out gauzatzen...");
 
         System.out.println("Training data: " + trainData.numInstances());
         System.out.println("Dev data: " + devData.numInstances());
-
-        mlp.buildClassifier(trainData);
 
         Evaluation eval = new Evaluation(trainData);
         eval.evaluateModel(mlp, devData);
@@ -52,13 +51,7 @@ public class KalitateEstimazioa {
         System.out.println(eval.toMatrixString("\n=== Confusion Matrix ===\n"));
         metrikak(eval, trainData, path);
     }
-    public void stratifiedRepeatedHoldOut(String rawTrainPath, String rawDevPath, int repeats, double trainRatio, int seed, String tempDirPath, String pathOut) throws Exception {
-        if (repeats <= 0) {
-            throw new IllegalArgumentException("repeats > 0 izan behar da");
-        }
-        if (trainRatio <= 0.0 || trainRatio >= 1.0) {
-            throw new IllegalArgumentException("trainRatio 0 eta 1 artean egon behar da");
-        }
+    public void stratifiedRepeatedHoldOut(String rawTrainPath, String rawDevPath, int repeats, double trainRatio, int seed, String tempDirPath, String pathOut, Classifier mlp) throws Exception {
 
         DataSource sourceTrain = new DataSource(rawTrainPath);
         Instances train = sourceTrain.getDataSet();
@@ -118,13 +111,7 @@ public class KalitateEstimazioa {
                 if (trainBek.classIndex() == -1) trainBek.setClassIndex(trainBek.numAttributes() - 1);
                 if (devBek.classIndex() == -1) devBek.setClassIndex(devBek.numAttributes() - 1);
 
-                // Parametro optimoak behin bakarrik kalkulatu, eta gainontzeko iterazioetan berrerabili.
-                if (parametroOptimoak == null) {
-                    parametroOptimoak = sailkatzailea.parametroOptimoakLortu(new Instances[]{trainBek, devBek, null});
-                }
 
-                Classifier mlp = sortuMLPParametroekin(parametroOptimoak);
-                mlp.buildClassifier(trainBek);
 
                 Evaluation eval = new Evaluation(trainBek);
                 eval.evaluateModel(mlp, devBek);
@@ -224,11 +211,19 @@ public class KalitateEstimazioa {
 
     private Classifier sortuMLPParametroekin(String[] parametroak) {
         MultilayerPerceptron mlp = new MultilayerPerceptron();
-        mlp.setNominalToBinaryFilter(false);
         mlp.setSeed(42);
-        mlp.setHiddenLayers(parametroak[0]);
-        mlp.setLearningRate(Double.parseDouble(parametroak[1]));
-        mlp.setMomentum(Double.parseDouble(parametroak[2]));
+
+        // Sailkatzailea.sailkatzaileaSortu-n erabiltzen diren parametro berdinak aplikatu
+        if (parametroak != null && parametroak.length >= 3) {
+            mlp.setHiddenLayers(parametroak[0]);
+            mlp.setLearningRate(Double.parseDouble(parametroak[1]));
+            mlp.setMomentum(Double.parseDouble(parametroak[2]));
+        } else {
+            mlp.setHiddenLayers("5");
+            mlp.setLearningRate(0.05);
+            mlp.setMomentum(0.1);
+        }
+
         mlp.setValidationSetSize(20);
         mlp.setValidationThreshold(15);
         return mlp;
@@ -237,7 +232,7 @@ public class KalitateEstimazioa {
 
     private void metrikak(Evaluation eval, Instances data, String pathOut) throws Exception {
 
-        int spamIdx = data.classAttribute().indexOfValue("spam");
+        int spamIdx = 1;
 
         PrintWriter pw = new PrintWriter(new File(pathOut));
         pw.println("Precision: " + eval.precision(spamIdx));
