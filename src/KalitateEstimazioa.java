@@ -37,6 +37,21 @@ public class KalitateEstimazioa {
         return mlp;
     }
 
+    public void ezZintzoa(Instances train, Instances dev, Classifier mlp, String path) throws Exception {
+        System.out.println("Ez-zintzoa gauzatzen...");
+
+        System.out.println("Training data: " + train.numInstances());
+        System.out.println("Dev data: " + dev.numInstances());
+        Instances dataGuztia =new  Instances(train);
+        dataGuztia.addAll(dev);
+        Evaluation eval = new Evaluation(train);
+        eval.evaluateModel(mlp, dataGuztia);
+        System.out.println(eval.toSummaryString("\n=== Eval Summary ===\n", false));
+        System.out.println(eval.toClassDetailsString("\n=== Class Details ===\n"));
+        System.out.println(eval.toMatrixString("\n=== Confusion Matrix ===\n"));
+        metrikak(eval, train, path);
+    }
+
 
     public void holdOut(Instances trainData, Instances devData,Classifier mlp, String path) throws Exception {
         System.out.println("Hold Out gauzatzen...");
@@ -132,6 +147,7 @@ public class KalitateEstimazioa {
 
                 System.out.println("[Rep " + (rep + 1) + "/" + repeats + "] train=" + trainBek.numInstances() + " dev=" + devBek.numInstances());
                 System.out.println(eval.toSummaryString("\n=== Eval Summary ===\n", false));
+                System.out.println(eval.toMatrixString());
 
                 pw.println("Rep " + (rep + 1));
                 pw.println(String.format(Locale.US, "Precision(spam): %.6f", p));

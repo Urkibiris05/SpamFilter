@@ -11,6 +11,7 @@ public class SpamFilter {
     private static final DataProcessor dataProcessor = new DataProcessor();
     private static final Sailkatzailea sailkatzailea = new Sailkatzailea();
     private static final KalitateEstimazioa kalitateEstimazioa = new KalitateEstimazioa();
+    private static final Iragarpenak iragarpenak = new Iragarpenak();
     private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
@@ -55,6 +56,8 @@ public class SpamFilter {
                         break;
 
                      */
+                    case "10":
+                        iragarpenak();
                     case "0":
                         martxan = false;
                         System.out.println("Agur! Programa amaituta.");
@@ -69,6 +72,18 @@ public class SpamFilter {
         }
     }
 
+    private static void iragarpenak() throws Exception {
+        String testBekPath = eskatuTestua("Bek TEST Bektorizatuta path-a");
+        String testPath = eskatuTestua("TEST path-a");
+        String modelPath = eskatuTestua("Kargatu beharreko model path-a (.model)");
+        String iragarpenakOut = eskatuTestua("Iragarpenak gordetzeko fitxategia");
+
+        Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
+        Instances testBek = kargatuInstantziak(testBekPath);
+        Instances test = kargatuInstantziak(testPath);
+        iragarpenak.Iragarpenak(testBek, test, modeloa,iragarpenakOut);
+    }
+
     private static void inprimatuMenua() {
         System.out.println("\n================= SPAM FILTER MENUA =================");
         System.out.println("1) TXT -> ARFF (sms2Arff)");
@@ -80,6 +95,7 @@ public class SpamFilter {
         System.out.println("7) Modelo optimoa sortu");
         System.out.println("8) Kalitate estimazioa (hold-out)");
         System.out.println("9) Pipeline osoa (preprozesatu + bektorizatu + entrenatu + ebaluatu)");
+        System.out.println("10) Iragarpenak");
         System.out.println("0) Irten");
         System.out.println("=====================================================");
     }
@@ -154,7 +170,11 @@ public class SpamFilter {
         Instances train = kargatuInstantziak(bekTrainPath);
         Instances dev = kargatuInstantziak(bekDevPath);
         Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
+        boolean erabiliEzZintzoa = eskatuBaiEz("Ez zintzoa erabili nahi duzu? (bai/ez)");
         boolean erabiliStratifiedRepeatedHoldOut = eskatuBaiEz("Stratified Repeated Hold-Out erabili nahi duzu? (bai/ez)");
+        if(erabiliEzZintzoa){
+            kalitateEstimazioa.ezZintzoa(train, dev, modeloa, metricsOutPath);
+        }
         if (erabiliStratifiedRepeatedHoldOut) {
             kalitateEstimazioa.stratifiedRepeatedHoldOut(
                     bekTrainPath,
