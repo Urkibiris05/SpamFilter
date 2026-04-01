@@ -1,10 +1,12 @@
 import weka.classifiers.Classifier;
-import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ConverterUtils.DataSource;
 
-import java.util.Scanner;
+import java.nio.file.Path;
+import java.util.LinkedHashMap;
+import java.util.Locale;
+import java.util.Map;
 
 public class SpamFilter {
 
@@ -12,269 +14,300 @@ public class SpamFilter {
     private static final Sailkatzailea sailkatzailea = new Sailkatzailea();
     private static final KalitateEstimazioa kalitateEstimazioa = new KalitateEstimazioa();
     private static final Iragarpenak iragarpenak = new Iragarpenak();
-    private static final Scanner scanner = new Scanner(System.in);
 
     public static void main(String[] args) {
-        exekutatuMenua();
-    }
-
-    private static void exekutatuMenua() {
-        boolean martxan = true;
-
-        while (martxan) {
-            inprimatuMenua();
-            String aukera = eskatuTestua("Aukera hautatu");
-
-            try {
-                switch (aukera) {
-                    case "1":
-                        sms2ArffInteraktiboa();
-                        break;
-                    case "2":
-                        instantziakAztertuInteraktiboa();
-                        break;
-                    case "3":
-                        bektorizatuInteraktiboa();
-                        break;
-                    case "4":
-                        parametroBilatzaileaInteraktiboa();
-                        break;
-                    case "5":
-                        parametroBilatzaileaV2Interaktiboa();
-                        break;
-                    case "6":
-                        parametroEkorketaInteraktiboa();
-                        break;
-                    case "7":
-                        modeloOptimoaSortuInteraktiboa();
-                        break;
-                    case "8":
-                        kalitateaEstimatuInteraktiboa();
-                        break;
-                    /*case "9":
-                        pipelineOsoaInteraktiboa();
-                        break;
-
-                     */
-                    case "10":
-                        iragarpenak();
-                    case "0":
-                        martxan = false;
-                        System.out.println("Agur! Programa amaituta.");
-                        break;
-                    default:
-                        System.out.println("Aukera baliogabea. Saiatu berriro.");
-                }
-            } catch (Exception e) {
-                System.out.println("Errorea funtzionalitatea exekutatzean: " + e.getMessage());
-                e.printStackTrace();
-            }
+        try {
+            exekutatuCli(args);
+        } catch (IllegalArgumentException e) {
+            System.err.println("Errorea: " + e.getMessage());
+            inprimatuLaguntza();
+            System.exit(1);
+        } catch (Exception e) {
+            e.printStackTrace();
+            System.exit(1);
         }
     }
 
-    private static void iragarpenak() throws Exception {
-        String testBekPath = eskatuTestua("Bek TEST Bektorizatuta path-a");
-        String testPath = eskatuTestua("TEST path-a");
-        String modelPath = eskatuTestua("Kargatu beharreko model path-a (.model)");
-        String iragarpenakOut = eskatuTestua("Iragarpenak gordetzeko fitxategia");
+    private static void exekutatuCli(String[] args) throws Exception {
+        Map<String, String> aukerak = parseArgs(args);
 
-        Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
-        Instances testBek = kargatuInstantziak(testBekPath);
-        Instances test = kargatuInstantziak(testPath);
-        iragarpenak.Iragarpenak(testBek, test, modeloa,iragarpenakOut);
+        if (aukerak.containsKey("help") || !aukerak.containsKey("run")) {
+            inprimatuLaguntza();
+            return;
+        }
+
+        String[] komandoak = aukerak.get("run").split(",");
+        for (String komandoaRaw : komandoak) {
+            String komandoa = komandoaRaw.trim().toLowerCase(Locale.ROOT);
+            if (komandoa.isEmpty()) {
+                continue;
+            }
+            exekutatuKomandoa(komandoa, aukerak);
+        }
     }
 
-    private static void inprimatuMenua() {
-        System.out.println("\n================= SPAM FILTER MENUA =================");
-        System.out.println("1) TXT -> ARFF (sms2Arff)");
-        System.out.println("2) Instantziak aztertu");
-        System.out.println("3) Bektorizatu datu sorta");
-        System.out.println("4) Parametro bilatzailea (V1)");
-        System.out.println("5) Parametro bilatzailea (V2)");
-        System.out.println("6) Parametro Ekorketa");
-        System.out.println("7) Modelo optimoa sortu");
-        System.out.println("8) Kalitate estimazioa (hold-out)");
-        System.out.println("9) Pipeline osoa (preprozesatu + bektorizatu + entrenatu + ebaluatu)");
-        System.out.println("10) Iragarpenak");
-        System.out.println("0) Irten");
-        System.out.println("=====================================================");
+    private static void exekutatuKomandoa(String komandoa, Map<String, String> aukerak) throws Exception {
+        switch (komandoa) {
+            case "sms2arff":
+                exekutatuSms2Arff(aukerak);
+                break;
+            case "analyze":
+                exekutatuAnalyze(aukerak);
+                break;
+            case "vectorize":
+                exekutatuVectorize(aukerak);
+                break;
+            case "param-search":
+                exekutatuParamSearch(aukerak);
+                break;
+            case "param-search-v2":
+                exekutatuParamSearchV2(aukerak);
+                break;
+            case "sweep":
+                exekutatuSweep(aukerak);
+                break;
+            case "train-optimal":
+                exekutatuTrainOptimal(aukerak);
+                break;
+            case "quality":
+                exekutatuQuality(aukerak);
+                break;
+            case "predict":
+                exekutatuPredict(aukerak);
+                break;
+            default:
+                throw new IllegalArgumentException("Komando ezezaguna: " + komandoa);
+        }
     }
 
-    private static void sms2ArffInteraktiboa() throws Exception {
-        String txtPath = eskatuTestua("Sartu TXT sarrerako path-a");
-        String arffPath = eskatuTestua("Sartu ARFF irteerako path-a");
-        boolean blind = eskatuBaiEz("Class blind da? (bai/ez)");
+    private static void exekutatuSms2Arff(Map<String, String> aukerak) throws Exception {
+        String txtPath = beharrezkoa(aukerak, "sms2arff.txt");
+        String arffPath = beharrezkoa(aukerak, "sms2arff.arff");
+        boolean blind = parseBoolean(aukerak.getOrDefault("sms2arff.blind", "false"));
         dataProcessor.sms2Arff(txtPath, arffPath, blind);
     }
 
-    private static void instantziakAztertuInteraktiboa() throws Exception {
-        String dataPath = eskatuTestua("Sartu aztertu nahi duzun ARFF path-a");
-        String etapaIzena = eskatuLehenetsia("Etapa izena", "ETAPA");
+    private static void exekutatuAnalyze(Map<String, String> aukerak) throws Exception {
+        String dataPath = beharrezkoa(aukerak, "analyze.data");
+        String etapaIzena = aukerak.getOrDefault("analyze.stage", "ETAPA");
         dataProcessor.instantziakAztertu(dataPath, etapaIzena);
     }
 
-    private static void bektorizatuInteraktiboa() throws Exception {
-        String rawDataPath = eskatuTestua("Raw ARFF path-a");
-        String bekDataPath = eskatuTestua("Bektorizatutako ARFF path-a");
-        String filterModelPath = eskatuTestua("Filtro/modelo path-a (adib. multiFilter.model)");
-        boolean isTrain = eskatuBaiEz("Train multzoa da? (bai/ez)");
+    private static void exekutatuVectorize(Map<String, String> aukerak) throws Exception {
+        String rawDataPath = beharrezkoa(aukerak, "vectorize.raw");
+        String bekDataPath = beharrezkoa(aukerak, "vectorize.bek");
+        String filterModelPath = beharrezkoa(aukerak, "vectorize.filter");
+        boolean isTrain = parseBoolean(aukerak.getOrDefault("vectorize.train", "false"));
         dataProcessor.bektorizatu(rawDataPath, bekDataPath, filterModelPath, isTrain);
     }
 
-    private static void parametroBilatzaileaInteraktiboa() throws Exception {
-        String rawTrainPath = eskatuTestua("Raw TRAIN ARFF path-a");
+    private static void exekutatuParamSearch(Map<String, String> aukerak) throws Exception {
+        String rawTrainPath = beharrezkoa(aukerak, "param-search.rawTrain");
         dataProcessor.parametroBilatzailea(rawTrainPath);
     }
 
-    private static void parametroBilatzaileaV2Interaktiboa() throws Exception {
-        String rawTrainPath = eskatuTestua("Raw TRAIN ARFF path-a");
-        String rawDevPath = eskatuTestua("Raw DEV ARFF path-a");
-        dataProcessor.parametroBilatzaileaV2(rawTrainPath, rawDevPath);
+    private static void exekutatuParamSearchV2(Map<String, String> aukerak) throws Exception {
+        String rawTrainPath = beharrezkoa(aukerak, "param-search-v2.rawTrain");
+        dataProcessor.parametroBilatzaileaV2(rawTrainPath);
     }
 
-    private static void parametroEkorketaInteraktiboa() throws Exception {
+    private static void exekutatuSweep(Map<String, String> aukerak) throws Exception {
         String[] arff = new String[2];
-        arff[0] = eskatuTestua("Bektorizatutako TRAIN ARFF path-a");
-        arff[1] = eskatuTestua("Bektorizatutako DEV ARFF path-a");
+        arff[0] = beharrezkoa(aukerak, "sweep.trainBek");
+        arff[1] = beharrezkoa(aukerak, "sweep.devBek");
 
-        Instances[] instantziak = new Instances[2];
-        instantziak = sailkatzailea.arffKargatu(arff);
+        Instances[] instantziak = sailkatzailea.arffKargatu(arff);
         sailkatzailea.parametroOptimoakLortu(instantziak);
     }
 
-    private static void modeloOptimoaSortuInteraktiboa() throws Exception {
-        String hl = eskatuTestua("HiddenLayers parametroa");
-        String lr = eskatuTestua("LearningRate parametroa");
-        String m = eskatuTestua("Momentum parametroa");
-        String[] parametroak = new String[3];
-        parametroak[0] = hl;
-        parametroak[1] = lr;
-        parametroak[2] = m;
-        String rawTrainPath = eskatuTestua("Raw TRAIN ARFF path-a");
-        String rawDevPath = eskatuTestua("Raw DEV ARFF path-a");
-        String rawDataPath = eskatuTestua("Raw DATA ARFF path-a");
-        String bekDataPath = eskatuTestua("Bek DATA ARFF path-a");
-        String filterModelPath = eskatuTestua("Filtro/modelo path-a (adib. multiFilter.model)");
-        String outputPath = eskatuTestua("Modelo optimoa gordetzeko path-a");
+    private static void exekutatuTrainOptimal(Map<String, String> aukerak) throws Exception {
+        String hl = beharrezkoa(aukerak, "train-optimal.hl");
+        String lr = beharrezkoa(aukerak, "train-optimal.lr");
+        String m = beharrezkoa(aukerak, "train-optimal.m");
+        String[] parametroak = new String[]{hl, lr, m};
+
+        String rawTrainPath = beharrezkoa(aukerak, "train-optimal.train");
+        String rawDevPath = aukerak.getOrDefault("train-optimal.dev", "");
+        String rawDataPath = beharrezkoa(aukerak, "train-optimal.rawData");
+        String bekDataPath = beharrezkoa(aukerak, "train-optimal.bekData");
+        String filterModelPath = beharrezkoa(aukerak, "train-optimal.filter");
+        String outputPath = beharrezkoa(aukerak, "train-optimal.out");
 
         sailkatzailea.sailkatzaileaSortu(parametroak, rawTrainPath, rawDevPath, rawDataPath, bekDataPath, filterModelPath, outputPath);
     }
 
-    private static void kalitateaEstimatuInteraktiboa() throws Exception {
-        String modelPath = eskatuTestua("Kargatu beharreko model path-a (.model)");
-        String metricsOutPath = eskatuTestua("Metrikak gordetzeko fitxategia");
+    private static void exekutatuQuality(Map<String, String> aukerak) throws Exception {
+        String modelPath = beharrezkoa(aukerak, "quality.model");
+        String metricsOutPath = beharrezkoa(aukerak, "quality.out");
+        String mode = aukerak.getOrDefault("quality.mode", "holdout").toLowerCase(Locale.ROOT);
 
-        boolean erabiliStratifiedRepeatedHoldOut = eskatuBaiEz("Stratified Repeated Hold-Out erabili nahi duzu? (bai/ez)");
         Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
 
-        if (erabiliStratifiedRepeatedHoldOut) {
-
-            String trainPath = eskatuTestua("TRAIN ARFF path-a");
-            String devPath = eskatuTestua("DEV ARFF path-a");
+        if ("srho".equals(mode)) {
+            String trainPath = beharrezkoa(aukerak, "quality.train");
+            String devPath = beharrezkoa(aukerak, "quality.dev");
 
             Instances train = kargatuInstantziak(trainPath);
             Instances dev = kargatuInstantziak(devPath);
 
-            int repeats = Integer.parseInt(eskatuLehenetsia("Errepikapen kopurua", "10"));
-            Double ratio = Double.parseDouble(eskatuLehenetsia("Train ratio (0-1)", "0.8"));
-            System.out.println("Datuen split bakoitza karpeta tenporal batean gordeko da (src/data/tmp) ");
-
-            kalitateEstimazioa.stratifiedRepeatedHoldOut(train, dev,repeats, ratio,42,"src/data/tmp",metricsOutPath,modeloa);
-        }
-        else {
-
-            String bekTrainPath = eskatuTestua("Bektorizatutako TRAIN ARFF path-a");
-            String bekDevPath = eskatuTestua("Bektorizatutako DEV ARFF path-a");
-
-            Instances trainBek = kargatuInstantziak(bekTrainPath);
-            Instances devBek = kargatuInstantziak(bekDevPath);
-
-            boolean erabiliEzZintzoa = eskatuBaiEz("Ez zintzoa erabili nahi duzu? (bai/ez)");
-            if (erabiliEzZintzoa) {
-                kalitateEstimazioa.ezZintzoa(trainBek, devBek, modeloa, metricsOutPath);
-            } else {
-                kalitateEstimazioa.holdOut(trainBek, devBek, modeloa, metricsOutPath);
-                System.out.println("Kalitate metrikak gordeta: " + metricsOutPath);
+            int repeats = parseInt(aukerak.getOrDefault("quality.repeats", "10"), "quality.repeats");
+            double ratio = parseDouble(aukerak.getOrDefault("quality.ratio", "0.8"), "quality.ratio");
+            int seed = parseInt(aukerak.getOrDefault("quality.seed", "42"), "quality.seed");
+            String tmpPath = aukerak.getOrDefault("quality.tmp", "src/data/tmp");
+            if (ratio <= 0.0 || ratio >= 1.0) {
+                throw new IllegalArgumentException("quality.ratio balioak 0 eta 1 artean egon behar du");
             }
-        }
-    }
 
-
-    /*private static void pipelineOsoaInteraktiboa() throws Exception {
-        System.out.println("\n--- PIPELINE OSOA ---");
-5
-        boolean preprozesatu = eskatuBaiEz("TXT fitxategietatik ARFF sortu nahi duzu? (bai/ez)");
-
-        String rawTrainPath = eskatuLehenetsia("Raw TRAIN ARFF path-a", "src/data/arff/SMS_SpamCollection.train.arff");
-        String rawDevPath = eskatuLehenetsia("Raw DEV ARFF path-a", "src/data/arff/SMS_SpamCollection.dev.arff");
-        String rawTestPath = eskatuLehenetsia("Raw TEST ARFF path-a", "src/data/arff/SMS_SpamCollection.test_blind.arff");
-
-        if (preprozesatu) {
-            String txtTrainPath = eskatuLehenetsia("TRAIN TXT path-a", "src/data/txt/SMS_SpamCollection.train.txt");
-            String txtDevPath = eskatuLehenetsia("DEV TXT path-a", "src/data/txt/SMS_SpamCollection.dev.txt");
-            String txtTestPath = eskatuLehenetsia("TEST TXT path-a", "src/data/txt/SMS_SpamCollection.test_blind.txt");
-
-            dataProcessor.sms2Arff(txtTrainPath, rawTrainPath, false);
-            dataProcessor.sms2Arff(txtDevPath, rawDevPath, false);
-            dataProcessor.sms2Arff(txtTestPath, rawTestPath, true);
-        }
-
-        boolean erabiliStratifiedRepeatedHoldOut = eskatuBaiEz("Stratified Repeated Hold-Out erabili nahi duzu? (bai/ez)");
-        String metricsOutPath = eskatuLehenetsia("Metriken irteera path-a", "src/data/results/metrikak.txt");
-
-        if (erabiliStratifiedRepeatedHoldOut) {
-            int repeats = Integer.parseInt(eskatuLehenetsia("Errepikapen kopurua", "10"));
-            double trainRatio = Double.parseDouble(eskatuLehenetsia("Train ratio (0-1)", "0.8"));
-            int seed = Integer.parseInt(eskatuLehenetsia("Hasierako hazia (seed)", "42"));
-            String tempDirPath = eskatuLehenetsia("Aldi baterako fitxategien karpeta", "src/data/tmp");
-
-            System.out.println("\n[SRHO] Stratified Repeated Hold-Out egiten...");
-            kalitateEstimazioa.stratifiedRepeatedHoldOut(
-                    rawTrainPath,
-                    rawDevPath,
-                    repeats,
-                    trainRatio,
-                    seed,
-                    tempDirPath,
-                    metricsOutPath
-            );
-
-            System.out.println("Pipeline osoa amaituta (SRHO modua).");
-            System.out.println(" - Metrikak: " + metricsOutPath);
+            kalitateEstimazioa.stratifiedRepeatedHoldOut(train, dev, repeats, ratio, seed, tmpPath, metricsOutPath, modeloa);
             return;
         }
 
-        String bekTrainPath = eskatuLehenetsia("BEK TRAIN ARFF path-a", "src/data/arff/SMS_SpamCollection.bektrain.arff");
-        String bekDevPath = eskatuLehenetsia("BEK DEV ARFF path-a", "src/data/arff/SMS_SpamCollection.bekdev.arff");
-        String bekTestPath = eskatuLehenetsia("BEK TEST ARFF path-a", "src/data/arff/SMS_SpamCollection.bektest_blind.arff");
-        String multiFilterPath = eskatuLehenetsia("MultiFilter path-a", "src/data/model/multiFilter.model");
-        String modelOutPath = eskatuLehenetsia("Azken model path-a", "src/data/model/final.model");
+        String bekTrainPath = beharrezkoa(aukerak, "quality.trainBek");
+        String bekDevPath = beharrezkoa(aukerak, "quality.devBek");
 
-        System.out.println("\n[1/4] Raw datuak bektorizatzen...");
-        dataProcessor.bektorizatu(rawTrainPath, bekTrainPath, multiFilterPath, true);
-        dataProcessor.bektorizatu(rawDevPath, bekDevPath, multiFilterPath, false);
-        dataProcessor.bektorizatu(rawTestPath, bekTestPath, multiFilterPath, false);
+        Instances trainBek = kargatuInstantziak(bekTrainPath);
+        Instances devBek = kargatuInstantziak(bekDevPath);
 
-        System.out.println("[2/4] Parametro optimoak bilatzen...");
-        Instances train = kargatuInstantziak(bekTrainPath);
-        Instances dev = kargatuInstantziak(bekDevPath);
-        String[] parametroak = sailkatzailea.parametroOptimoakLortu(new Instances[]{train, dev, null});
-
-        System.out.println("[3/4] Eredua entrenatzen eta gordetzen...");
-        Classifier modeloa = sortuMLP(parametroak);
-        modeloa.buildClassifier(train);
-        SerializationHelper.write(modelOutPath, modeloa);
-
-        System.out.println("[4/4] Kalitate estimazioa egiten...");
-        kalitateEstimazioa.holdOut(train, dev, modeloa, metricsOutPath);
-
-        System.out.println("Pipeline osoa amaituta.");
-        System.out.println(" - Modeloa: " + modelOutPath);
-        System.out.println(" - Metrikak: " + metricsOutPath);
+        if ("unfair".equals(mode)) {
+            kalitateEstimazioa.ezZintzoa(trainBek, devBek, modeloa, metricsOutPath);
+        } else {
+            kalitateEstimazioa.holdOut(trainBek, devBek, modeloa, metricsOutPath);
+            System.out.println("Kalitate metrikak gordeta: " + metricsOutPath);
+        }
     }
-     */
 
-    //CUIDADO
+    private static void exekutatuPredict(Map<String, String> aukerak) throws Exception {
+        String test = beharrezkoa(aukerak, "predict.test");
+        String modelPath = beharrezkoa(aukerak, "predict.model");
+        String iragarpenakOut = beharrezkoa(aukerak, "predict.out");
+
+        Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
+        iragarpenak.Iragarpenak(test, modeloa, iragarpenakOut);
+    }
+
+    private static Map<String, String> parseArgs(String[] args) {
+        Map<String, String> parsed = new LinkedHashMap<>();
+        int i = 0;
+
+        while (i < args.length) {
+            String arg = args[i];
+            if (!arg.startsWith("--")) {
+                throw new IllegalArgumentException("Argumentu formatu okerra: " + arg);
+            }
+
+            String token = arg.substring(2);
+            String key;
+            String value;
+
+            int eqPos = token.indexOf('=');
+            if (eqPos >= 0) {
+                key = token.substring(0, eqPos).trim();
+                value = token.substring(eqPos + 1).trim();
+            } else {
+                key = token.trim();
+                if (i + 1 < args.length && !args[i + 1].startsWith("--")) {
+                    value = args[i + 1].trim();
+                    i++;
+                } else {
+                    value = "true";
+                }
+            }
+
+            if (key.isEmpty()) {
+                throw new IllegalArgumentException("Argumentu gakoa hutsik dago");
+            }
+
+            parsed.put(key, balioaPathBadaNormalizatu(key, value));
+            i++;
+        }
+
+        return parsed;
+    }
+
+    private static String balioaPathBadaNormalizatu(String key, String value) {
+        if (!key.contains("path")
+                && !key.endsWith(".txt")
+                && !key.endsWith(".arff")
+                && !key.endsWith(".bek")
+                && !key.endsWith(".model")
+                && !key.endsWith(".filter")
+                && !key.endsWith(".out")
+                && !key.endsWith(".data")
+                && !key.endsWith(".test")
+                && !key.endsWith(".train")
+                && !key.endsWith(".dev")
+                && !key.endsWith(".trainBek")
+                && !key.endsWith(".devBek")
+                && !key.endsWith(".tmp")
+                && !key.endsWith(".rawData")
+                && !key.endsWith(".bekData")
+                && !key.endsWith(".rawTrain")) {
+            return value;
+        }
+        return resolvePath(value);
+    }
+
+    private static String resolvePath(String path) {
+        Path p = Path.of(path);
+        if (!p.isAbsolute()) {
+            p = Path.of("").toAbsolutePath().normalize().resolve(p).normalize();
+        }
+        return p.toString();
+    }
+
+    private static String beharrezkoa(Map<String, String> aukerak, String gakoa) {
+        String balioa = aukerak.get(gakoa);
+        if (balioa == null || balioa.trim().isEmpty()) {
+            throw new IllegalArgumentException("Falta da argumentu hau: --" + gakoa);
+        }
+        return balioa;
+    }
+
+    private static boolean parseBoolean(String balioa) {
+        String b = balioa.trim().toLowerCase(Locale.ROOT);
+        return "true".equals(b) || "1".equals(b) || "bai".equals(b) || "yes".equals(b) || "y".equals(b);
+    }
+
+    private static int parseInt(String balioa, String gakoa) {
+        try {
+            return Integer.parseInt(balioa);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(gakoa + " zenbaki osoa izan behar da: " + balioa);
+        }
+    }
+
+    private static double parseDouble(String balioa, String gakoa) {
+        try {
+            return Double.parseDouble(balioa);
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException(gakoa + " zenbaki hamartarra izan behar da: " + balioa);
+        }
+    }
+
+    private static void inprimatuLaguntza() {
+        System.out.println("Erabilera:");
+        System.out.println("  java -jar SpamFilter.jar --run <cmd1,cmd2,...> [--gakoa balioa ...]");
+        System.out.println();
+        System.out.println("Komandoak:");
+        System.out.println("  sms2arff         -> --sms2arff.txt --sms2arff.arff [--sms2arff.blind true|false]");
+        System.out.println("  analyze          -> --analyze.data [--analyze.stage ETAPA]");
+        System.out.println("  vectorize        -> --vectorize.raw --vectorize.bek --vectorize.filter --vectorize.train true|false");
+        System.out.println("  param-search     -> --param-search.rawTrain");
+        System.out.println("  param-search-v2  -> --param-search-v2.rawTrain");
+        System.out.println("  sweep            -> --sweep.trainBek --sweep.devBek");
+        System.out.println("  train-optimal    -> --train-optimal.hl --train-optimal.lr --train-optimal.m --train-optimal.train [--train-optimal.dev] --train-optimal.rawData --train-optimal.bekData --train-optimal.filter --train-optimal.out");
+        System.out.println("  quality          -> --quality.model --quality.out --quality.mode holdout|unfair|srho");
+        System.out.println("                       holdout/unfair: --quality.trainBek --quality.devBek");
+        System.out.println("                       srho: --quality.train --quality.dev [--quality.repeats 10 --quality.ratio 0.8 --quality.seed 42 --quality.tmp src/data/tmp]");
+        System.out.println("  predict          -> --predict.test --predict.model --predict.out");
+        System.out.println();
+        System.out.println("Adibidea (komando bakarra):");
+        System.out.println("  --run sms2arff --sms2arff.txt src/data/txt/SMS_SpamCollection.train.txt --sms2arff.arff src/data/arff/SMS_SpamCollection.train.arff --sms2arff.blind false");
+        System.out.println();
+        System.out.println("Adibidea (komando anitz):");
+        System.out.println("  --run sms2arff,vectorize --sms2arff.txt src/data/txt/SMS_SpamCollection.train.txt --sms2arff.arff src/data/arff/SMS_SpamCollection.train.arff --vectorize.raw src/data/arff/SMS_SpamCollection.train.arff --vectorize.bek src/data/arff/SMS_SpamCollection.bektrain.arff --vectorize.filter src/data/model/multiFilter.model --vectorize.train true");
+    }
+
     private static Instances kargatuInstantziak(String path) throws Exception {
         Instances data = new DataSource(path).getDataSet();
         if (data.classIndex() == -1) {
@@ -282,42 +315,4 @@ public class SpamFilter {
         }
         return data;
     }
-
-    //CUIDADO
-    /*private static Classifier sortuMLP(String[] parametroak) {
-        MultilayerPerceptron mlp = new MultilayerPerceptron();
-        mlp.setNominalToBinaryFilter(false);
-        mlp.setSeed(42);
-        mlp.setHiddenLayers(parametroak[0]);
-        mlp.setLearningRate(Double.parseDouble(parametroak[1]));
-        mlp.setMomentum(Double.parseDouble(parametroak[2]));
-        mlp.setValidationSetSize(20);
-        mlp.setValidationThreshold(15);
-        return mlp;
-    }
-    */
-    private static String eskatuTestua(String mezua) {
-        System.out.print(mezua + ": ");
-        return scanner.nextLine().trim();
-    }
-
-    private static String eskatuLehenetsia(String mezua, String balioLehenetsia) {
-        System.out.print(mezua + " [" + balioLehenetsia + "]: ");
-        String sarrera = scanner.nextLine().trim();
-        return sarrera.isEmpty() ? balioLehenetsia : sarrera;
-    }
-
-    private static boolean eskatuBaiEz(String mezua) {
-        while (true) {
-            String balioa = eskatuTestua(mezua).toLowerCase();
-            if ("bai".equals(balioa) || "ba".equals(balioa) || "y".equals(balioa) || "yes".equals(balioa)) {
-                return true;
-            }
-            if ("ez".equals(balioa) || "e".equals(balioa) || "n".equals(balioa) || "no".equals(balioa)) {
-                return false;
-            }
-            System.out.println("Mesedez, erantzun bai/ez.");
-        }
-    }
-
 }

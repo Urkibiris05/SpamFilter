@@ -7,6 +7,7 @@ import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
+import weka.core.pmml.jaxbbindings.True;
 import weka.core.stemmers.IteratedLovinsStemmer;
 import weka.core.stemmers.LovinsStemmer;
 import weka.core.stemmers.Stemmer;
@@ -18,7 +19,9 @@ import weka.core.tokenizers.WordTokenizer;
 import weka.filters.Filter;
 import weka.filters.MultiFilter;
 import weka.filters.supervised.attribute.AttributeSelection;
+import weka.filters.supervised.instance.Resample;
 import weka.filters.unsupervised.attribute.StringToWordVector;
+import weka.filters.unsupervised.instance.RemovePercentage;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -404,15 +407,37 @@ public class DataProcessor {
      * TRAIN/DEV gaineko atributu-hautaketako laborategia exekutatzen du, bektorizazio konfigurazio finkoarekin.
      *
      * @param rawTrainPath TRAIN ARFF gordinaren bidea
-     * @param rawDevPath DEV ARFF gordinaren bidea
      * @throws Exception dataseten kargak huts egiten badu
      */
-    public void parametroBilatzaileaV2(String rawTrainPath, String rawDevPath) throws Exception {
+    public void parametroBilatzaileaV2(String rawTrainPath) throws Exception {
         Instances trainRaw = new DataSource(rawTrainPath).getDataSet();
         if (trainRaw.classIndex() == -1) trainRaw.setClassIndex(trainRaw.numAttributes() - 1);
 
-        Instances devRaw = new DataSource(rawDevPath).getDataSet();
-        if (devRaw.classIndex() == -1) devRaw.setClassIndex(devRaw.numAttributes() - 1);
+        Resample resample = new Resample();
+        resample.setSeed(50);
+        resample.setBiasToUniformClass(0.0);
+        resample.setSampleSizePercent(80.0);
+        resample.setNoReplacement(true);
+        resample.setInvertSelection(true);
+        resample.setInputFormat(trainRaw);
+        Instances devRaw = Filter.useFilter(trainRaw, resample);
+
+        resample.setInvertSelection(false);
+        resample.setInputFormat(trainRaw);
+        trainRaw =  Filter.useFilter(trainRaw, resample);
+
+        ArffSaver saver = new ArffSaver();
+        saver.setInstances(trainRaw);
+        saver.setFile(new File("src/data/arff/train.train.arff"));
+        saver.writeBatch();
+
+        ArffSaver saver2 = new ArffSaver();
+        saver2.setInstances(devRaw);
+        saver2.setFile(new File("src/data/arff/train.dev.arff"));
+        saver2.writeBatch();
+        instantziakAztertu("src/data/arff/train.train.arff", "TRAIN");
+        instantziakAztertu("src/data/arff/train.dev.arff", "DEV");
+
 
         System.out.println("\n======================================================");
         System.out.println("LABORATEGIA V2: ATTRIBUTE SELECTION GRID SEARCH");
@@ -489,8 +514,8 @@ public class DataProcessor {
      * Pipeline oso bat exekutatzen du: TRAIN bektorizatu, aukerako hautaketa aplikatu,
      * MLP bat entrenatu eta DEVen ebaluatu, transformazio-iragazki bera erabiliz.
      *
-     * @param trainRaw TRAIN dataset gordina
-     * @param devRaw DEV dataset gordina
+     * @param trainRaw eredua entrenatzeko dataset gordina
+     * @param devRaw eredua ebaluatzeko dataset gordina
      * @param stwv bektorizazioaren oinarrizko filtroa
      * @param asFilter atributu-hautaketako filtroa (null izan daiteke)
      * @param probaIzena logetarako etiketa deskribatzailea
