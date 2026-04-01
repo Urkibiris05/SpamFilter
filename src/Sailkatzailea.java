@@ -139,9 +139,10 @@ public class Sailkatzailea {
      * @param bekDataPath Bektorizazioaren ondoren lortuko den fitxategia baita non gordeko den.
      * @param filterPath Erabiliko den iragazkiaren bidea.
      * @param outputPath Eredua (.model) gordeko den bidea.
+     * @return Entrenatutako modelo bat bueltatuko du ezarritako parametroen arabera.
      * @throws Exception Fitxategiak idaztean edo eredua eraikitzean akatsen bat badago.
      */
-    public void sailkatzaileaSortu(String[] parametroak, String trainPath, String devPath, String rawDataPath, String bekDataPath, String filterPath, String outputPath) throws Exception{
+    public Classifier sailkatzaileaSortu(String[] parametroak, String trainPath, String devPath, String rawDataPath, String bekDataPath, String filterPath, String outputPath) throws Exception{
         try {
             DataSource sourceTrain = new DataSource(trainPath);
             Instances train = sourceTrain.getDataSet();
@@ -197,9 +198,11 @@ public class Sailkatzailea {
             // .model gorde entregatzeko
             SerializationHelper.write(outputPath, mlp);
             System.out.println("[OK] Modeloa ondo gorde da hemen: " + outputPath);
+            return mlp;
 
         } catch (Exception e) {
             e.printStackTrace();
+            return null;
         }
     }
 
