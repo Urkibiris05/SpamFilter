@@ -1,0 +1,58 @@
+Stratified Repeated Hold-Out (raw train+dev)
+Repeats: 10
+Train ratio: 0.8
+
+Rep 1
+Precision(spam): 0.847222
+Recall(spam): 0.491935
+F1(spam): 0.622449
+
+Rep 2
+Precision(spam): 0.769231
+Recall(spam): 0.564516
+F1(spam): 0.651163
+
+Rep 3
+Precision(spam): 0.728395
+Recall(spam): 0.475806
+F1(spam): 0.575610
+
+Rep 4
+Precision(spam): 0.750000
+Recall(spam): 0.604839
+F1(spam): 0.669643
+
+Rep 5
+Precision(spam): 0.780822
+Recall(spam): 0.459677
+F1(spam): 0.578680
+
+Rep 6
+Precision(spam): 0.780000
+Recall(spam): 0.629032
+F1(spam): 0.696429
+
+Rep 7
+Precision(spam): 0.819149
+Recall(spam): 0.620968
+F1(spam): 0.706422
+
+Rep 8
+Precision(spam): 0.855670
+Recall(spam): 0.669355
+F1(spam): 0.751131
+
+Rep 9
+Precision(spam): 0.575163
+Recall(spam): 0.709677
+F1(spam): 0.635379
+
+Rep 10
+Precision(spam): 0.744186
+Recall(spam): 0.516129
+F1(spam): 0.609524
+
+---- Mean ----
+Precision(spam) mean: 0.764984
+Recall(spam) mean: 0.574194
+F1(spam) mean: 0.649643

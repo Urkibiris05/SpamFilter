@@ -1,11 +1,13 @@
 # SpamFilter CLI
 
-Proiektu hau argumentuen bidez exekutatzen da (menu interaktiborik gabe), `SpamFilter`-eko `main` erabiliz.
+Fitxategi honetan, "SpamFilter.jar" komando-lineako aplikazioaren erabilera eta komandoak azaltzen dira. 
+Aplikazio honek SMS spam detekzioarekin lotutako hainbat prozesu exekutatzeko aukera ematen du, 
+hala nola datuen prestaketa, bektorizazioa, parametro bilaketa, entrenamendua eta ebaluazioa.
 
 ## Oinarrizko erabilera
 
 ```bash
-java -jar SpamFilter.jar --run <comando1,comando2,...> [--clave valor ...]
+java -jar SpamFilter.jar --run <komando1,komando2,...> [--gakoa balioa ...]
 ```
 
 `--gakoa=balioa` formatua ere erabil dezakezu.
@@ -16,7 +18,18 @@ Laguntza:
 java -jar SpamFilter.jar --help
 ```
 
-## Comandos disponibles
+## KONTUZ! 
+Helbide bezala sartzen diren irteera fitxategi guztiak ez dira zertan sortuta egon behar, baina bai haien direktorio gurasoa.
+Adbz. /home/\$USER/datuak/data.arff irteera fitxategia ez da sortuta egon behar, baina /home/$USER/datuak direktorioa existitu behar da fitxategia zuzen sortzeko.
+
+## Komando erabilgarriak
+### Aukera orokorrak
+
+- `--run`: exekutatu beharreko komandoen zerrenda, komaz bereizita (adib. `sms2arff,vectorize`).
+- `--help`: programaren laguntza erakusten du.
+- Argumentuen formatua: `--gakoa balioa` eta `--gakoa=balioa` onartzen dira.
+
+### Komando zehatzak
 
 - `sms2arff`
   - Zer egiten du: SMSen TXT fitxategi bat ARFF bihurtzen du.
@@ -62,35 +75,25 @@ java -jar SpamFilter.jar --help
   - `--train-optimal.out` [Beharrezkoa]: entrenatutako modeloaren irteerako bidea (`.model`).
 
 - `quality`
-  - Zer egiten du: modelo bat ebaluatu eta metrikak gordetzen ditu.
-  - `--quality.model` [Beharrezkoa]: ebaluatu beharreko modeloaren bidea (`.model`).
+  - Zer egiten du: kalitate-ebaluazioak exekutatu eta metrikak gordetzen ditu.
   - `--quality.out` [Beharrezkoa]: metriken irteerako fitxategiaren bidea.
   - `--quality.mode` [Aukerakoa]: ebaluazio modua `holdout|unfair|srho` (`lehenetsia: holdout`).
-  - Si `quality.mode=holdout` o `unfair`:
-    - `--quality.trainBek` [Beharrezkoa]: train ARFF bektorizatuaren bidea.
-    - `--quality.devBek` [Beharrezkoa]: dev ARFF bektorizatuaren bidea.
-  - Si `quality.mode=srho`:
-    - `--quality.train` [Beharrezkoa]: train ARFF gordinaren bidea.
-    - `--quality.dev` [Beharrezkoa]: dev ARFF gordinaren bidea.
+  - `--quality.train` [Beharrezkoa]: train ARFF gordinaren bidea.
+  - `--quality.dev` [Beharrezkoa]: dev ARFF gordinaren bidea.
+  - `quality.mode=srho` bada, gainera:
     - `--quality.repeats` [Aukerakoa]: errepikapen kopurua (`lehenetsia: 10`).
     - `--quality.ratio` [Aukerakoa]: train proportzioa split bakoitzean (`lehenetsia: 0.8`).
     - `--quality.seed` [Aukerakoa]: hasierako hazia (`lehenetsia: 42`).
     - `--quality.tmp` [Aukerakoa]: tarteko fitxategietarako aldi baterako karpeta (`lehenetsia: src/data/tmp`).
 
 - `predict`
-  - Zer egiten du: testeko iragarpenak sortu eta TXT/CSV fitxategian gordetzen ditu.
+  - Zer egiten du: testeko iragarpenak sortu eta TXT fitxategian gordetzen ditu.
   - `--predict.test` [Beharrezkoa]: testeko TXT fitxategiaren bidea (mezuak lerroz-lerro).
   - `--predict.model` [Beharrezkoa]: iragartzeko erabiliko den modeloaren bidea (`.model`).
   - `--predict.filter` [Beharrezkoa]: bektorizaziorako erabiliko den `multiFilter` modeloaren bidea (`.model`).
   - `--predict.out` [Beharrezkoa]: iragarpenen irteerako fitxategiaren bidea.
 
-### Aukera orokorrak
-
-- `--run`: exekutatu beharreko komandoen zerrenda, komaz bereizita (adib. `sms2arff,vectorize`).
-- `--help`: programaren laguntza erakusten du.
-- Argumentuen formatua: `--gakoa balioa` eta `--gakoa=balioa` onartzen dira.
-
-## Ejemplos
+## Adibideak
 
 ### 1) Komando bakarra
 
@@ -122,13 +125,38 @@ java -jar SpamFilter.jar \
 java -jar SpamFilter.jar \
   --run quality \
   --quality.mode holdout \
-  --quality.model src/data/model/final.model \
-  --quality.trainBek src/data/arff/SMS_SpamCollection.bektrain.arff \
-  --quality.devBek src/data/arff/SMS_SpamCollection.bekdev.arff \
+  --quality.train src/data/arff/SMS_SpamCollection.train.arff \
+  --quality.dev src/data/arff/SMS_SpamCollection.dev.arff \
   --quality.out src/data/results/metrikakHO.txt
 ```
 
-### 4) Iragarpenak (predict)
+### 4) Unfair ebaluazioa
+
+```bash
+java -jar SpamFilter.jar \
+  --run quality \
+  --quality.mode unfair \
+  --quality.train src/data/arff/SMS_SpamCollection.train.arff \
+  --quality.dev src/data/arff/SMS_SpamCollection.dev.arff \
+  --quality.out src/data/results/metrikakEZ.txt
+```
+
+### 5) SRHO ebaluazioa
+
+```bash
+java -jar SpamFilter.jar \
+  --run quality \
+  --quality.mode srho \
+  --quality.train src/data/arff/SMS_SpamCollection.train.arff \
+  --quality.dev src/data/arff/SMS_SpamCollection.dev.arff \
+  --quality.repeats 10 \
+  --quality.ratio 0.8 \
+  --quality.seed 42 \
+  --quality.tmp src/data/tmp \
+  --quality.out src/data/results/metrikakSRHO.txt
+```
+
+### 6) Iragarpenak (predict)
 
 ```bash
 java -jar SpamFilter.jar \

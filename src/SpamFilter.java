@@ -137,19 +137,16 @@ public class SpamFilter {
     }
 
     private static void exekutatuQuality(Map<String, String> aukerak) throws Exception {
-        String modelPath = beharrezkoa(aukerak, "quality.model");
         String metricsOutPath = beharrezkoa(aukerak, "quality.out");
         String mode = aukerak.getOrDefault("quality.mode", "holdout").toLowerCase(Locale.ROOT);
 
-        Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
+        String trainPath = beharrezkoa(aukerak, "quality.train");
+        String devPath = beharrezkoa(aukerak, "quality.dev");
+
+        Instances train = kargatuInstantziak(trainPath);
+        Instances dev = kargatuInstantziak(devPath);
 
         if ("srho".equals(mode)) {
-            String trainPath = beharrezkoa(aukerak, "quality.train");
-            String devPath = beharrezkoa(aukerak, "quality.dev");
-
-            Instances train = kargatuInstantziak(trainPath);
-            Instances dev = kargatuInstantziak(devPath);
-
             int repeats = parseInt(aukerak.getOrDefault("quality.repeats", "10"), "quality.repeats");
             double ratio = parseDouble(aukerak.getOrDefault("quality.ratio", "0.8"), "quality.ratio");
             int seed = parseInt(aukerak.getOrDefault("quality.seed", "42"), "quality.seed");
@@ -158,20 +155,14 @@ public class SpamFilter {
                 throw new IllegalArgumentException("quality.ratio balioak 0 eta 1 artean egon behar du");
             }
 
-            kalitateEstimazioa.stratifiedRepeatedHoldOut(train, dev, repeats, ratio, seed, tmpPath, metricsOutPath, modeloa);
+            kalitateEstimazioa.stratifiedRepeatedHoldOut(train, dev, repeats, ratio, seed, tmpPath, metricsOutPath);
             return;
         }
 
-        String bekTrainPath = beharrezkoa(aukerak, "quality.trainBek");
-        String bekDevPath = beharrezkoa(aukerak, "quality.devBek");
-
-        Instances trainBek = kargatuInstantziak(bekTrainPath);
-        Instances devBek = kargatuInstantziak(bekDevPath);
-
         if ("unfair".equals(mode)) {
-            kalitateEstimazioa.ezZintzoa(trainBek, devBek, modeloa, metricsOutPath);
+            kalitateEstimazioa.ezZintzoa(train, dev, metricsOutPath);
         } else {
-            kalitateEstimazioa.holdOut(trainBek, devBek, modeloa, metricsOutPath);
+            kalitateEstimazioa.holdOut(train, dev, metricsOutPath);
             System.out.println("Kalitate metrikak gordeta: " + metricsOutPath);
         }
     }
@@ -302,8 +293,8 @@ public class SpamFilter {
         System.out.println("  param-search-v2  -> --param-search-v2.rawTrain");
         System.out.println("  sweep            -> --sweep.trainBek --sweep.devBek");
         System.out.println("  train-optimal    -> --train-optimal.hl --train-optimal.lr --train-optimal.m --train-optimal.train [--train-optimal.dev] --train-optimal.rawData --train-optimal.bekData --train-optimal.filter --train-optimal.out");
-        System.out.println("  quality          -> --quality.model --quality.out --quality.mode holdout|unfair|srho");
-        System.out.println("                       holdout/unfair: --quality.trainBek --quality.devBek");
+        System.out.println("  quality          -> --quality.out --quality.mode holdout|unfair|srho --quality.train --quality.dev");
+        System.out.println("                       holdout/unfair: --quality.train --quality.dev");
         System.out.println("                       srho: --quality.train --quality.dev [--quality.repeats 10 --quality.ratio 0.8 --quality.seed 42 --quality.tmp src/data/tmp]");
         System.out.println("  predict          -> --predict.test --predict.model --predict.filter --predict.out");
         System.out.println();

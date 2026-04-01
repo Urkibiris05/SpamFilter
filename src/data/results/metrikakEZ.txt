@@ -1,3 +1,9 @@
-Precision: 0.9468503937007874
-Recall: 0.7808441558441559
-F-Score: 0.8558718861209964
+Precision: 0.7551369863013698
+Recall: 0.7159090909090909
+F-Score: 0.735
+=== Confusion Matrix ===
+
+    a    b   <-- classified as
+ 3715  143 |    a = ham
+  175  441 |    b = spam
+

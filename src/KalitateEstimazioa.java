@@ -46,7 +46,7 @@ public class KalitateEstimazioa {
 
         System.out.println("Training data: " + train.numInstances());
         System.out.println("Dev data: " + dev.numInstances());
-        Instances dataGuztia =new  Instances(train);
+        Instances dataGuztia = new  Instances(train);
         dataGuztia.addAll(dev);
         ArffSaver saver = new ArffSaver();
         saver.setInstances(dataGuztia);

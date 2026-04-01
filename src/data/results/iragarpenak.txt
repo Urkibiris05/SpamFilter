@@ -5,7 +5,7 @@ Instantzia,Iragarpena
 4",ham
 5",ham
 6",ham
-7",spam
+7",ham
 8",ham
 9",ham
 10",ham
@@ -13,7 +13,7 @@ Instantzia,Iragarpena
 12",ham
 13",ham
 14",ham
-15",spam
+15",ham
 16",ham
 17",ham
 18",ham
@@ -76,7 +76,7 @@ Instantzia,Iragarpena
 75",ham
 76",ham
 77",ham
-78",spam
+78",ham
 79",ham
 80",ham
 81",ham
@@ -128,7 +128,7 @@ Instantzia,Iragarpena
 127",ham
 128",ham
 129",ham
-130",ham
+130",spam
 131",ham
 132",ham
 133",ham
@@ -203,7 +203,7 @@ Instantzia,Iragarpena
 202",ham
 203",ham
 204",ham
-205",ham
+205",spam
 206",ham
 207",spam
 208",ham
@@ -222,7 +222,7 @@ Instantzia,Iragarpena
 221",ham
 222",ham
 223",ham
-224",ham
+224",spam
 225",ham
 226",spam
 227",ham
@@ -276,7 +276,7 @@ Instantzia,Iragarpena
 275",ham
 276",ham
 277",ham
-278",ham
+278",spam
 279",ham
 280",spam
 281",ham
@@ -298,7 +298,7 @@ Instantzia,Iragarpena
 297",ham
 298",ham
 299",ham
-300",ham
+300",spam
 301",ham
 302",spam
 303",ham
@@ -379,7 +379,7 @@ Instantzia,Iragarpena
 378",spam
 379",spam
 380",ham
-381",ham
+381",spam
 382",ham
 383",ham
 384",ham
@@ -559,7 +559,7 @@ Instantzia,Iragarpena
 558",ham
 559",ham
 560",ham
-561",ham
+561",spam
 562",ham
 563",ham
 564",spam
@@ -689,7 +689,7 @@ Instantzia,Iragarpena
 688",ham
 689",ham
 690",ham
-691",ham
+691",spam
 692",spam
 693",ham
 694",ham
@@ -704,7 +704,7 @@ Instantzia,Iragarpena
 703",ham
 704",ham
 705",ham
-706",ham
+706",spam
 707",ham
 708",ham
 709",ham
@@ -832,7 +832,7 @@ Instantzia,Iragarpena
 831",ham
 832",ham
 833",ham
-834",ham
+834",spam
 835",ham
 836",ham
 837",ham
@@ -861,7 +861,7 @@ Instantzia,Iragarpena
 860",spam
 861",ham
 862",ham
-863",ham
+863",spam
 864",ham
 865",spam
 866",ham
@@ -894,7 +894,7 @@ Instantzia,Iragarpena
 893",ham
 894",ham
 895",ham
-896",ham
+896",spam
 897",ham
 898",ham
 899",ham
@@ -954,7 +954,7 @@ Instantzia,Iragarpena
 953",ham
 954",ham
 955",ham
-956",spam
+956",ham
 957",ham
 958",ham
 959",ham
@@ -964,9 +964,9 @@ Instantzia,Iragarpena
 963",ham
 964",ham
 965",ham
-966",spam
+966",ham
 967",ham
-968",ham
+968",spam
 969",spam
 970",ham
 971",spam
@@ -1003,7 +1003,7 @@ Instantzia,Iragarpena
 1002",spam
 1003",ham
 1004",ham
-1005",ham
+1005",spam
 1006",ham
 1007",ham
 1008",spam
@@ -1029,7 +1029,7 @@ Instantzia,Iragarpena
 1028",ham
 1029",ham
 1030",ham
-1031",spam
+1031",ham
 1032",ham
 1033",ham
 1034",ham
@@ -1072,7 +1072,7 @@ Instantzia,Iragarpena
 1071",spam
 1072",ham
 1073",ham
-1074",ham
+1074",spam
 1075",ham
 1076",ham
 1077",ham
