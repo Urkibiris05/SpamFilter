@@ -1,5 +1,6 @@
 import weka.classifiers.Classifier;
 import weka.classifiers.Evaluation;
+import weka.classifiers.functions.MultilayerPerceptron;
 import weka.core.Instances;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
@@ -37,23 +38,32 @@ public class KalitateEstimazioa {
      *
      * @param train entrenamendurako instantziak
      * @param dev garapenerako instantziak
-     * @param mlp ebaluatu beharreko modeloa
      * @param path metrikak idazteko irteerako fitxategiaren bidea
      * @throws Exception ebaluazioan edo fitxategi-idazketan errorea badago
      */
-    public void ezZintzoa(Instances train, Instances dev, Classifier mlp, String path) throws Exception {
+    public void ezZintzoa(Instances train, Instances dev, String path) throws Exception {
         System.out.println("Ez-zintzoa gauzatzen...");
 
         System.out.println("Training data: " + train.numInstances());
         System.out.println("Dev data: " + dev.numInstances());
         Instances dataGuztia =new  Instances(train);
         dataGuztia.addAll(dev);
-        Evaluation eval = new Evaluation(train);
-        eval.evaluateModel(mlp, dataGuztia);
+        ArffSaver saver = new ArffSaver();
+        saver.setInstances(dataGuztia);
+        saver.setFile(new File("src/data/arff/trainDev.arff"));
+        saver.writeBatch();
+        dataProcessor.bektorizatu("src/data/arff/trainDev.arff","src/data/arff/trainDevBek.arff","src/data/model/trainDevMultiFilter.model",true);
+        DataSource source = new DataSource("src/data/arff/trainDevBek.arff");
+        Instances data = source.getDataSet();
+        data.setClassIndex(data.numAttributes() - 1);
+        Evaluation eval = new Evaluation(data);
+        Classifier mlp = sailkatzailea.sailkatzaileOptimoaSortuHardCoded();
+        mlp.buildClassifier(data);
+        eval.evaluateModel(mlp, data);
         System.out.println(eval.toSummaryString("\n=== Eval Summary ===\n", false));
         System.out.println(eval.toClassDetailsString("\n=== Class Details ===\n"));
         System.out.println(eval.toMatrixString("\n=== Confusion Matrix ===\n"));
-        metrikak(eval, train, path);
+        metrikak(eval, data, path);
     }
 
 
@@ -62,22 +72,42 @@ public class KalitateEstimazioa {
      *
      * @param trainData entrenamendu multzoa (eredua aurrez entrenatuta dagoela suposatzen da)
      * @param devData balidazio/garapen multzoa
-     * @param mlp ebaluatu beharreko modeloa
      * @param path metrikak idazteko irteerako fitxategiaren bidea
      * @throws Exception ebaluazioan edo fitxategi-idazketan errorea badago
      */
-    public void holdOut(Instances trainData, Instances devData,Classifier mlp, String path) throws Exception {
+    public void holdOut(Instances trainData, Instances devData, String path) throws Exception {
         System.out.println("Hold Out gauzatzen...");
 
         System.out.println("Training data: " + trainData.numInstances());
         System.out.println("Dev data: " + devData.numInstances());
 
-        Evaluation eval = new Evaluation(trainData);
-        eval.evaluateModel(mlp, devData);
+        ArffSaver saver = new ArffSaver();
+        saver.setInstances(trainData);
+        saver.setFile(new File("src/data/arff/train.arff"));
+        saver.writeBatch();
+        dataProcessor.bektorizatu("src/data/arff/train.arff","src/data/arff/trainBek.arff","src/data/model/trainMultiFilter.model",true);
+        DataSource source1 = new DataSource("src/data/arff/trainBek.arff");
+        Instances train = source1.getDataSet();
+        train.setClassIndex(train.numAttributes() - 1);
+
+        saver = new ArffSaver();
+        saver.setInstances(devData);
+        saver.setFile(new File("src/data/arff/dev.arff"));
+        saver.writeBatch();
+        dataProcessor.bektorizatu("src/data/arff/dev.arff","src/data/arff/devBek.arff","src/data/model/trainMultiFilter.model",false);
+        DataSource source2 = new DataSource("src/data/arff/devBek.arff");
+        Instances dev = source2.getDataSet();
+        dev.setClassIndex(dev.numAttributes() - 1);
+
+
+        Classifier mlp = sailkatzailea.sailkatzaileOptimoaSortuHardCoded();
+        mlp.buildClassifier(train);
+        Evaluation eval = new Evaluation(train);
+        eval.evaluateModel(mlp, dev);
         System.out.println(eval.toSummaryString("\n=== Eval Summary ===\n", false));
         System.out.println(eval.toClassDetailsString("\n=== Class Details ===\n"));
         System.out.println(eval.toMatrixString("\n=== Confusion Matrix ===\n"));
-        metrikak(eval, trainData, path);
+        metrikak(eval, train, path);
     }
 
 
@@ -95,10 +125,9 @@ public class KalitateEstimazioa {
      * @param seed ausazko hasierako hazia
      * @param tempDirPath aldi baterako ARFF/model fitxategiak gordetzeko karpeta
      * @param pathOut errepikapen eta batezbesteko metrikak idazteko fitxategia
-     * @param mlp errepikapen bakoitzean entrenatu eta ebaluatuko den modeloa
      * @throws Exception split, bektorizazio, entrenamendu edo idazketan errorea badago
      */
-    public void stratifiedRepeatedHoldOut(Instances train, Instances dev, int repeats, double trainRatio, int seed, String tempDirPath, String pathOut, Classifier mlp) throws Exception {
+    public void stratifiedRepeatedHoldOut(Instances train, Instances dev, int repeats, double trainRatio, int seed, String tempDirPath, String pathOut) throws Exception {
 
         Instances dataTotala = new Instances(train);
         dataTotala.addAll(dev);
@@ -145,6 +174,7 @@ public class KalitateEstimazioa {
                 if (trainBek.classIndex() == -1) trainBek.setClassIndex(trainBek.numAttributes() - 1);
                 if (devBek.classIndex() == -1) devBek.setClassIndex(devBek.numAttributes() - 1);
 
+                Classifier mlp = sailkatzailea.sailkatzaileOptimoaSortuHardCoded();
                 mlp.buildClassifier(trainBek);
 
                 Evaluation eval = new Evaluation(trainBek);

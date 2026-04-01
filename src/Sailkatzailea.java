@@ -206,4 +206,24 @@ public class Sailkatzailea {
         }
     }
 
+    /**
+     * Parametro modelo optimoa sortzen du (hardcoded balioekin) nahi diren datu sortekin.
+     */
+    public Classifier sailkatzaileOptimoaSortuHardCoded(){
+        //.model finala sortu (Parametro hoberenekin)
+        String hl = "10,5";
+        Double lr = 0.01;
+        Double m = 0.1;
+        MultilayerPerceptron mlp = new MultilayerPerceptron();
+        mlp.setNominalToBinaryFilter(false);
+        mlp.setSeed(42);
+        mlp.setHiddenLayers(hl);
+        mlp.setLearningRate(lr);
+        mlp.setMomentum(m);
+
+        mlp.setValidationSetSize(20);
+        mlp.setValidationThreshold(15);
+
+        return mlp;
+    }
 }
