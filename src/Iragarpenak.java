@@ -24,16 +24,23 @@ public class Iragarpenak {
      * @param test test multzo jatorrizoa (mezuak lortzeko)
      * @param mlp entrenatu nahi den Weka Classifier-a
      * @param out txt irteera fitxategiaren bidea
+     * @param multiFilterPath bektorizazioan erabilitako MultiFilter-aren konfigurazio fitxategiaren bidea
      * @throws Exception irakurketa, idazketa edo klasifikazioan errorea gertatzen bada
      */
     public void Iragarpenak(String test, Classifier mlp, String multiFilterPath, String out) throws Exception {
 
-        dataProcessor.sms2Arff(test, "SMS_SpamCollection.test_blind.arff",true);
+        dataProcessor.sms2Arff(test, "SMS_SpamCollection.test_blind.arff", true);
         System.out.println("ARFF fitxategia hemen sortu da: ./SMS_SpamCollection.test_blind.arff");
 
+        ConverterUtils.DataSource sourceRawTest = new ConverterUtils.DataSource("SMS_SpamCollection.test_blind.arff");
+        Instances testRaw = sourceRawTest.getDataSet();
+        if (testRaw.classIndex() == -1) {
+            testRaw.setClassIndex(testRaw.numAttributes() - 1);
+        }
+
         dataProcessor.bektorizatu("SMS_SpamCollection.test_blind.arff",
-                        "SMS_SpamCollection.bektest_blind.arff",
-                        multiFilterPath,false);
+                "SMS_SpamCollection.bektest_blind.arff",
+                multiFilterPath, false);
 
         ConverterUtils.DataSource sourceBekTest = new ConverterUtils.DataSource("SMS_SpamCollection.bektest_blind.arff");
         Instances testBek = sourceBekTest.getDataSet();
@@ -42,30 +49,39 @@ public class Iragarpenak {
             testBek.setClassIndex(testBek.numAttributes() - 1);
         }
 
-        //Irteera fitxategia
+        if (testRaw.numInstances() != testBek.numInstances()) {
+            throw new IllegalStateException("Test raw eta test bektorizatuaren instantzia kopurua ez dator bat: "
+                    + testRaw.numInstances() + " != " + testBek.numInstances());
+        }
+
+        // Irteera fitxategia
         PrintWriter writer = new PrintWriter(new FileWriter(out));
-        writer.println("Instantzia,Iragarpena");
+        writer.println("Instantzia,MezuaOriginala,Iragarpena");
 
         System.out.println("[INFO] Iragarpenak egiten...");
 
-        //Instantziak iteratu
+        // Instantziak iteratu
         for (int i = 0; i < testBek.numInstances(); i++) {
-
-
             Instance instBek = testBek.instance(i);
-
+            Instance instRaw = testRaw.instance(i);
 
             double clsLabel = mlp.classifyInstance(instBek);
 
-            //Predikzioa lortu
+            // Predikzioa eta jatorrizko mezua hartu
             String prediction = testBek.classAttribute().value((int) clsLabel);
+            String mezuaOriginala = instRaw.stringValue(0);
 
-            writer.println((i + 1) +  "\"," + prediction);
+            writer.println((i + 1) + "," + csvEscape(mezuaOriginala) + "," + csvEscape(prediction));
         }
 
         writer.close();
         System.out.println("[OK] Iragarpenak fitxategi honetan gorde dira: " + out);
     }
+
+    private String csvEscape(String value) {
+        return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+
 }
 
 
