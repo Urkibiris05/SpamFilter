@@ -65,7 +65,7 @@ public class Sailkatzailea {
             System.out.println("======================================================");
 
             String[] balioParametroa = new String[3];
-            String[] hiddenLayersBalioak = {"1", "5", "10", "15", "5,10", "10, 5", "5, 5, 5", "5,10,15", "15,10,5"};
+            String[] hiddenLayersBalioak = {"5", "10", "15", "5,10", "10, 5", "5, 5, 5", "5,10,15", "15,10,5"};
             double[] learningRatesBalioak = {0.01, 0.05, 0.1, 0.2, 0.3};
             double[] momentumsBalioak = {0.1, 0.2};
             String bestH = "";
