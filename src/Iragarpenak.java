@@ -26,16 +26,16 @@ public class Iragarpenak {
      * @param out txt irteera fitxategiaren bidea
      * @throws Exception irakurketa, idazketa edo klasifikazioan errorea gertatzen bada
      */
-    public void Iragarpenak(String test,Classifier mlp, String out) throws Exception {
+    public void Iragarpenak(String test, Classifier mlp, String multiFilterPath, String out) throws Exception {
 
-        dataProcessor.sms2Arff(test, "src/data/arff/SMS_SpamCollection.test_blind.arff",true);
+        dataProcessor.sms2Arff(test, "SMS_SpamCollection.test_blind.arff",true);
         System.out.println("ARFF fitxategia hemen sortu da: src/data/arff/SMS_SpamCollection.test_blind.arff");
 
-        dataProcessor.bektorizatu("src/data/arff/SMS_SpamCollection.test_blind.arff",
-                        "src/data/arff/SMS_SpamCollection.bektest_blind.arff",
-                        "src/data/model/multiFilter.model",false);
+        dataProcessor.bektorizatu("SMS_SpamCollection.test_blind.arff",
+                        "SMS_SpamCollection.bektest_blind.arff",
+                        multiFilterPath,false);
 
-        ConverterUtils.DataSource sourceBekTest = new ConverterUtils.DataSource("src/data/arff/SMS_SpamCollection.bektest_blind.arff");
+        ConverterUtils.DataSource sourceBekTest = new ConverterUtils.DataSource("SMS_SpamCollection.bektest_blind.arff");
         Instances testBek = sourceBekTest.getDataSet();
 
         if (testBek.classIndex() == -1) {

@@ -46,9 +46,11 @@ public class DataProcessor {
     public void sms2Arff(String pTxtPath, String pArffPath, boolean isClassBlind) throws Exception {
         String txtPath = pTxtPath;
         String arffPath = pArffPath;
+        File arffFile = new File(arffPath);
+        arffFile.createNewFile();
 
         try (Scanner sc = new Scanner(new File(txtPath), "UTF-8");
-             PrintWriter pw = new PrintWriter(new File(arffPath), "UTF-8")) {
+             PrintWriter pw = new PrintWriter(arffFile, "UTF-8")) {
 
             pw.println("@relation sms_spam_proiektua\n");
             pw.println("@attribute Text string");

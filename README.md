@@ -81,6 +81,7 @@ java -jar SpamFilter.jar --help
   - Zer egiten du: testeko iragarpenak sortu eta TXT/CSV fitxategian gordetzen ditu.
   - `--predict.test` [Beharrezkoa]: testeko TXT fitxategiaren bidea (mezuak lerroz-lerro).
   - `--predict.model` [Beharrezkoa]: iragartzeko erabiliko den modeloaren bidea (`.model`).
+  - `--predict.filter` [Beharrezkoa]: bektorizaziorako erabiliko den `multiFilter` modeloaren bidea (`.model`).
   - `--predict.out` [Beharrezkoa]: iragarpenen irteerako fitxategiaren bidea.
 
 ### Aukera orokorrak
@@ -125,6 +126,17 @@ java -jar SpamFilter.jar \
   --quality.trainBek src/data/arff/SMS_SpamCollection.bektrain.arff \
   --quality.devBek src/data/arff/SMS_SpamCollection.bekdev.arff \
   --quality.out src/data/results/metrikakHO.txt
+```
+
+### 4) Iragarpenak (predict)
+
+```bash
+java -jar SpamFilter.jar \
+  --run predict \
+  --predict.test src/data/txt/SMS_SpamCollection.test_blind.txt \
+  --predict.model src/data/model/final.model \
+  --predict.filter src/data/model/multiFilter.model \
+  --predict.out src/data/results/iragarpenak.txt
 ```
 
 ## Bideak

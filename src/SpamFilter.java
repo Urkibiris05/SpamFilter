@@ -179,10 +179,11 @@ public class SpamFilter {
     private static void exekutatuPredict(Map<String, String> aukerak) throws Exception {
         String test = beharrezkoa(aukerak, "predict.test");
         String modelPath = beharrezkoa(aukerak, "predict.model");
+        String multiFilterPath = beharrezkoa(aukerak, "predict.filter");
         String iragarpenakOut = beharrezkoa(aukerak, "predict.out");
 
         Classifier modeloa = (Classifier) SerializationHelper.read(modelPath);
-        iragarpenak.Iragarpenak(test, modeloa, iragarpenakOut);
+        iragarpenak.Iragarpenak(test, modeloa, multiFilterPath, iragarpenakOut);
     }
 
     private static Map<String, String> parseArgs(String[] args) {
@@ -299,7 +300,7 @@ public class SpamFilter {
         System.out.println("  quality          -> --quality.model --quality.out --quality.mode holdout|unfair|srho");
         System.out.println("                       holdout/unfair: --quality.trainBek --quality.devBek");
         System.out.println("                       srho: --quality.train --quality.dev [--quality.repeats 10 --quality.ratio 0.8 --quality.seed 42 --quality.tmp src/data/tmp]");
-        System.out.println("  predict          -> --predict.test --predict.model --predict.out");
+        System.out.println("  predict          -> --predict.test --predict.model --predict.filter --predict.out");
         System.out.println();
         System.out.println("Adibidea (komando bakarra):");
         System.out.println("  --run sms2arff --sms2arff.txt src/data/txt/SMS_SpamCollection.train.txt --sms2arff.arff src/data/arff/SMS_SpamCollection.train.arff --sms2arff.blind false");
