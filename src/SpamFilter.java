@@ -8,6 +8,23 @@ import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 
+/**
+ * SpamFilter CLI aplikazioaren sarrera-puntua.
+ *
+ * <p>Klase honek SpamFilter.jar-ren linea-komandoko interfazea kudeatzen du,
+ * komando ezberdinak (sms2arff, analyze, vectorize, train-optimal, quality, predict, etc.)
+ * analizatu, argudioak prozesatu eta exekutzeko.</p>
+ *
+ * <p>Erabileraren adibidea:</p>
+ * <pre>
+ * java -jar SpamFilter.jar --run sms2arff --sms2arff.txt data.txt --sms2arff.arff data.arff
+ * </pre>
+ *
+ * <p>INFORMAZIO GUZTIA: Begiratu README.md edo erabili script.sh erabilera errazagorako.</p>
+ *
+ * @author SpamFilter taldea
+ * @version 1.0
+ */
 public class SpamFilter {
 
     private static final DataProcessor dataProcessor = new DataProcessor();
@@ -15,6 +32,13 @@ public class SpamFilter {
     private static final KalitateEstimazioa kalitateEstimazioa = new KalitateEstimazioa();
     private static final Iragarpenak iragarpenak = new Iragarpenak();
 
+    /**
+     * Aplikazioaren sarrera-puntua.
+     *
+     * <p>Komandoaren argumentuak analizatu, CLI exekutatu eta erroreak kudeatu.</p>
+     *
+     * @param args komandoaren argumentuak, formatua: --run komandoa --gakoa balioa
+     */
     public static void main(String[] args) {
         try {
             exekutatuCli(args);
@@ -28,6 +52,15 @@ public class SpamFilter {
         }
     }
 
+    /**
+     * CLI argumentuak analizatu eta komandoak exekutatu.
+     *
+     * <p>Argudioak mapean bihurtu, --run gakoa aztertu eta komando bakoitza
+     * exekutatu argumentuen bilduma bera erabiliz.</p>
+     *
+     * @param args linean sartutako argumentuak
+     * @throws Exception exekuzioan errorea baldin bada
+     */
     private static void exekutatuCli(String[] args) throws Exception {
         Map<String, String> aukerak = parseArgs(args);
 
@@ -46,6 +79,13 @@ public class SpamFilter {
         }
     }
 
+    /**
+     * Komando bakoitza dagokion metodoari zuzendu.
+     *
+     * @param komandoa exekutatu beharreko komandoaren izena
+     * @param aukerak komandoaren argudioak eta balioak
+     * @throws Exception komandoaren exekuzioan errorea baldin bada
+     */
     private static void exekutatuKomandoa(String komandoa, Map<String, String> aukerak) throws Exception {
         switch (komandoa) {
             case "sms2arff":
@@ -80,6 +120,12 @@ public class SpamFilter {
         }
     }
 
+    /**
+     * SMS fitxategi TXTa ARFF formatuan bihurtu.
+     *
+     * @param aukerak argudioak: sms2arff.txt, sms2arff.arff, sms2arff.blind
+     * @throws Exception konbertsioaren exekuzioan errorea baldin bada
+     */
     private static void exekutatuSms2Arff(Map<String, String> aukerak) throws Exception {
         String txtPath = beharrezkoa(aukerak, "sms2arff.txt");
         String arffPath = beharrezkoa(aukerak, "sms2arff.arff");
@@ -87,12 +133,24 @@ public class SpamFilter {
         dataProcessor.sms2Arff(txtPath, arffPath, blind);
     }
 
+    /**
+     * ARFF baten oinarrizko estatistikak erakutsi.
+     *
+     * @param aukerak argudioak: analyze.data, analyze.stage (aukerakoa)
+     * @throws Exception analisiaren exekuzioan errorea baldin bada
+     */
     private static void exekutatuAnalyze(Map<String, String> aukerak) throws Exception {
         String dataPath = beharrezkoa(aukerak, "analyze.data");
         String etapaIzena = aukerak.getOrDefault("analyze.stage", "ETAPA");
         dataProcessor.instantziakAztertu(dataPath, etapaIzena);
     }
 
+    /**
+     * ARFF fitxategia bektorizatu eta filtratu.
+     *
+     * @param aukerak argudioak: vectorize.raw, vectorize.bek, vectorize.filter, vectorize.train
+     * @throws Exception bektorizazioaren exekuzioan errorea baldin bada
+     */
     private static void exekutatuVectorize(Map<String, String> aukerak) throws Exception {
         String rawDataPath = beharrezkoa(aukerak, "vectorize.raw");
         String bekDataPath = beharrezkoa(aukerak, "vectorize.bek");
@@ -101,16 +159,34 @@ public class SpamFilter {
         dataProcessor.bektorizatu(rawDataPath, bekDataPath, filterModelPath, isTrain);
     }
 
+    /**
+     * Oinarrizko parametro bilaketaren esperimentuak exekutatu.
+     *
+     * @param aukerak argudioak: param-search.rawTrain
+     * @throws Exception bilaketa-exekuzioan errorea baldin bada
+     */
     private static void exekutatuParamSearch(Map<String, String> aukerak) throws Exception {
         String rawTrainPath = beharrezkoa(aukerak, "param-search.rawTrain");
         dataProcessor.parametroBilatzailea(rawTrainPath);
     }
 
+    /**
+     * Parametro/atributu bilaketa V2 bertsioa exekutatu.
+     *
+     * @param aukerak argudioak: param-search-v2.rawTrain
+     * @throws Exception bilaketa-exekuzioan errorea baldin bada
+     */
     private static void exekutatuParamSearchV2(Map<String, String> aukerak) throws Exception {
         String rawTrainPath = beharrezkoa(aukerak, "param-search-v2.rawTrain");
         dataProcessor.parametroBilatzaileaV2(rawTrainPath);
     }
 
+    /**
+     * Sailkatzailearen parametro-ekorketa exekutatu.
+     *
+     * @param aukerak argudioak: sweep.trainBek, sweep.devBek
+     * @throws Exception ekorketaren exekuzioan errorea baldin bada
+     */
     private static void exekutatuSweep(Map<String, String> aukerak) throws Exception {
         String[] arff = new String[2];
         arff[0] = beharrezkoa(aukerak, "sweep.trainBek");
@@ -120,6 +196,12 @@ public class SpamFilter {
         sailkatzailea.parametroOptimoakLortu(instantziak);
     }
 
+    /**
+     * Azken sailkatzailea entrenatu hiperparametro zehatzak erabiliz.
+     *
+     * @param aukerak argudioak: train-optimal.hl, train-optimal.lr, train-optimal.m, etc.
+     * @throws Exception entrenamenduan errorea baldin bada
+     */
     private static void exekutatuTrainOptimal(Map<String, String> aukerak) throws Exception {
         String hl = beharrezkoa(aukerak, "train-optimal.hl");
         String lr = beharrezkoa(aukerak, "train-optimal.lr");
@@ -136,6 +218,15 @@ public class SpamFilter {
         sailkatzailea.sailkatzaileaSortu(parametroak, rawTrainPath, rawDevPath, rawDataPath, bekDataPath, filterModelPath, outputPath);
     }
 
+    /**
+     * Sailkatzailea ebaluatu eta kalitate metrikak kalkulatu.
+     *
+     * <p>Hiru ebaluazio modu onartzen ditu:
+     * holdout, unfair eta stratified repeated hold-out (srho).</p>
+     *
+     * @param aukerak argudioak: quality.out, quality.mode, quality.train, quality.dev, eta besteak
+     * @throws Exception ebaluazioaren exekuzioan errorea baldin bada
+     */
     private static void exekutatuQuality(Map<String, String> aukerak) throws Exception {
         String metricsOutPath = beharrezkoa(aukerak, "quality.out");
         String mode = aukerak.getOrDefault("quality.mode", "holdout").toLowerCase(Locale.ROOT);
@@ -167,6 +258,12 @@ public class SpamFilter {
         }
     }
 
+    /**
+     * Entrenatutako sailkatzailea erabiliz testeko datuetan iragarpenak sortu.
+     *
+     * @param aukerak argudioak: predict.test, predict.model, predict.filter, predict.out
+     * @throws Exception iragarpenen exekuzioan errorea baldin bada
+     */
     private static void exekutatuPredict(Map<String, String> aukerak) throws Exception {
         String test = beharrezkoa(aukerak, "predict.test");
         String modelPath = beharrezkoa(aukerak, "predict.model");
@@ -177,6 +274,16 @@ public class SpamFilter {
         iragarpenak.Iragarpenak(test, modeloa, multiFilterPath, iragarpenakOut);
     }
 
+    /**
+     * Linean sartutako argumentuak mapean konvertitu.
+     *
+     * <p>Formatua onartzen du:
+     * --gakoa balioa (espazioz bereizita) edo --gakoa=balioa (berdintasunarekin).</p>
+     *
+     * @param args linean sartutako argumentuak
+     * @return gakoa-balioa bikoteen mapa
+     * @throws IllegalArgumentException formatua okerra baldin bada
+     */
     private static Map<String, String> parseArgs(String[] args) {
         Map<String, String> parsed = new LinkedHashMap<>();
         int i = 0;
@@ -216,6 +323,16 @@ public class SpamFilter {
         return parsed;
     }
 
+    /**
+     * Balioaren bidea normalizatu beharrezkoa baldin bada.
+     *
+     * <p>Gakoa bide-identifikatzaileak dituentzat (txten, arff, model, etc.),
+     * bide erlatiboak bide absolutuetan konbertitzen ditu.</p>
+     *
+     * @param key argudioaren gakoa
+     * @param value argudioaren balioa
+     * @return normalizatutako bidea edo jatorrizko balioa
+     */
     private static String balioaPathBadaNormalizatu(String key, String value) {
         // Ez normalizatu boolearrak: bestela "true" -> "/cwd/true" bihurtzen da.
         if ("vectorize.train".equals(key) || "sms2arff.blind".equals(key)) {
@@ -244,6 +361,12 @@ public class SpamFilter {
         return resolvePath(value);
     }
 
+    /**
+     * Bide erlatibo bat bide absolutuetan konbertitu.
+     *
+     * @param path bide erlatibo edo absolutua
+     * @return normalizatutako bide absolutua
+     */
     private static String resolvePath(String path) {
         Path p = Path.of(path);
         if (!p.isAbsolute()) {
@@ -252,6 +375,14 @@ public class SpamFilter {
         return p.toString();
     }
 
+    /**
+     * Obligatorioa den argudio balioa jaso mapean, edo errorea bota.
+     *
+     * @param aukerak gakoa-balioa mapa
+     * @param gakoa bilatzen den gakoa
+     * @return gakoarekin loturiko balioa
+     * @throws IllegalArgumentException gakoa falta edo hutsa baldin bada
+     */
     private static String beharrezkoa(Map<String, String> aukerak, String gakoa) {
         String balioa = aukerak.get(gakoa);
         if (balioa == null || balioa.trim().isEmpty()) {
@@ -260,11 +391,25 @@ public class SpamFilter {
         return balioa;
     }
 
+    /**
+     * Testua boolearrean konbertitu.
+     *
+     * @param balioa konbertitu beharreko testua (true, false, bai, ez, 1, 0, etc.)
+     * @return true baldin bada ezagutzen den balio bai-a, bestela false
+     */
     private static boolean parseBoolean(String balioa) {
         String b = balioa.trim().toLowerCase(Locale.ROOT);
         return "true".equals(b) || "1".equals(b) || "bai".equals(b) || "yes".equals(b) || "y".equals(b);
     }
 
+    /**
+     * Testua zenbaki osorean konbertitu.
+     *
+     * @param balioa konbertitu beharreko testua
+     * @param gakoa errorea-mezurako informazioa
+     * @return konbertitutako zenbaki osoa
+     * @throws IllegalArgumentException konbertsioa huts egiten baldin bada
+     */
     private static int parseInt(String balioa, String gakoa) {
         try {
             return Integer.parseInt(balioa);
@@ -273,6 +418,14 @@ public class SpamFilter {
         }
     }
 
+    /**
+     * Testua zenbaki hamartarran konbertitu.
+     *
+     * @param balioa konbertitu beharreko testua
+     * @param gakoa errorea-mezurako informazioa
+     * @return konbertitutako zenbaki hamartarra
+     * @throws IllegalArgumentException konbertsioa huts egiten baldin bada
+     */
     private static double parseDouble(String balioa, String gakoa) {
         try {
             return Double.parseDouble(balioa);
@@ -281,6 +434,11 @@ public class SpamFilter {
         }
     }
 
+    /**
+     * Laguntza-mezua inprimatu kontsolan.
+     *
+     * <p>Erabileraren sintaxia, komandoak eta adibideak agertzen ditu.</p>
+     */
     private static void inprimatuLaguntza() {
         System.out.println("Erabilera:");
         System.out.println("  java -jar SpamFilter.jar --run <cmd1,cmd2,...> [--gakoa balioa ...]");
@@ -305,6 +463,15 @@ public class SpamFilter {
         System.out.println("  --run sms2arff,vectorize --sms2arff.txt src/data/txt/SMS_SpamCollection.train.txt --sms2arff.arff src/data/arff/SMS_SpamCollection.train.arff --vectorize.raw src/data/arff/SMS_SpamCollection.train.arff --vectorize.bek src/data/arff/SMS_SpamCollection.bektrain.arff --vectorize.filter src/data/model/multiFilter.model --vectorize.train true");
     }
 
+    /**
+     * ARFF fitxategia kargatu eta instantzien multzo baten gisa itzuli.
+     *
+     * <p>Klasea-indexa automatikoki definitzen du fitxategiaren azken atributua baldin bada.</p>
+     *
+     * @param path kargatu beharreko ARFF fitxategiaren bidea
+     * @return cargado Instances objektua
+     * @throws Exception kargatzean errorea baldin bada
+     */
     private static Instances kargatuInstantziak(String path) throws Exception {
         Instances data = new DataSource(path).getDataSet();
         if (data.classIndex() == -1) {

@@ -42,7 +42,7 @@ fi
 
 # EGIKARIARAZTEKO ADIBIDEAK: Komentatu/deskomentatu egikaritu nahi dituzun funtzionalitateak.
 # =========================
-# 1) sms2arff
+# 1) sms2arff (sms txt fitxategiak arff formatura bihurtu)
 # =========================
 # "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run sms2arff \
 #   --sms2arff.txt "$TXT_KARPETA/SMS_SpamCollection.train.txt" \
@@ -50,14 +50,14 @@ fi
 #   --sms2arff.blind false
 
 # =========================
-# 2) analyze
+# 2) analyze (instantzia sortak aztertu)
 # =========================
 # "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run analyze \
 #   --analyze.data "$ARFF_KARPETA/SMS_SpamCollection.train.arff" \
 #   --analyze.stage ETAPA
 
 # =========================
-# 3) vectorize
+# 3) vectorize (bektorizazioa)
 # =========================
 # "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run vectorize \
 #   --vectorize.raw "$ARFF_KARPETA/SMS_SpamCollection.train.arff" \
@@ -66,37 +66,37 @@ fi
 #   --vectorize.train true
 
 # =========================
-# 4) sweep
+# 4) sweep (parametro ekorketa)
 # =========================
 # "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run sweep \
 #   --sweep.trainBek "$ARFF_KARPETA/SMS_SpamCollection.bektrain.arff" \
 #   --sweep.devBek "$ARFF_KARPETA/SMS_SpamCollection.bekdev.arff"
 
 # =========================
-# 5) param-search
+# 5) param-search (bektorizazio optimoaren bilaketa)
 # =========================
 # "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run param-search \
 #   --param-search.rawTrain "$ARFF_KARPETA/SMS_SpamCollection.train.arff"
 
 # =========================
-# 6) param-search-v2
+# 6) param-search-v2 (bektorizazio optimoaren bilaketa v2)
 # =========================
 # "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run param-search-v2 \
 #   --param-search-v2.rawTrain "$ARFF_KARPETA/SMS_SpamCollection.train.arff"
 
 # =========================
-# 7) train-optimal
+# 7) train-optimal (eredua entrenatu adierazitako parametroekin. Jada jarritakoak guk ekortutako balioak dira)
 # =========================
- "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run train-optimal \
-   --train-optimal.hl 10,5 \
-   --train-optimal.lr 0.01 \
-   --train-optimal.m 0.1 \
-   --train-optimal.train "$ARFF_KARPETA/SMS_SpamCollection.train.arff" \
-   --train-optimal.dev "$ARFF_KARPETA/SMS_SpamCollection.dev.arff" \
-   --train-optimal.rawData "$ARFF_KARPETA/SMS_SpamCollection.data.arff" \
-   --train-optimal.bekData "$ARFF_KARPETA/SMS_SpamCollection.bekdata.arff" \
-   --train-optimal.filter "$MODEL_KARPETA/MultiFilter_Train_Dev.model" \
-   --train-optimal.out "$MODEL_KARPETA/MLP_Train_Dev.model"
+# "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run train-optimal \
+#   --train-optimal.hl 10,5 \
+#   --train-optimal.lr 0.01 \
+#   --train-optimal.m 0.1 \
+#   --train-optimal.train "$ARFF_KARPETA/SMS_SpamCollection.train.arff" \
+#   --train-optimal.dev "$ARFF_KARPETA/SMS_SpamCollection.dev.arff" \
+#   --train-optimal.rawData "$ARFF_KARPETA/SMS_SpamCollection.data.arff" \
+#   --train-optimal.bekData "$ARFF_KARPETA/SMS_SpamCollection.bekdata.arff" \
+#   --train-optimal.filter "$MODEL_KARPETA/MultiFilter_Train_Dev.model" \
+#   --train-optimal.out "$MODEL_KARPETA/MLP_Train_Dev.model"
 
 # =========================
 # 8) quality (holdout)
@@ -108,7 +108,7 @@ fi
 #   --quality.out "$EMAITZA_KARPETA/metrikakHO.txt"
 
 # =========================
-# 8b) quality (unfair)
+# 8b) quality (unfair, ebaluazio ez zintzoa)
 # =========================
 # "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run quality \
 #   --quality.mode unfair \
@@ -117,7 +117,7 @@ fi
 #   --quality.out "$EMAITZA_KARPETA/metrikakEZ.txt"
 
 # =========================
-# 8c) quality (srho)
+# 8c) quality (srho, stratified repeated holdout)
 # =========================
 # "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run quality \
 #   --quality.mode srho \
@@ -130,11 +130,11 @@ fi
 #   --quality.out "$EMAITZA_KARPETA/metrikakSRHO.txt"
 
 # =========================
-# 9) predict
+# 9) predict (iragarpenak)
 # =========================
- "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run predict \
-  --predict.test "$TXT_KARPETA/SMS_SpamCollection.test_blind.txt" \
-  --predict.model "$MODEL_KARPETA/MLP_Train_Dev.model" \
-  --predict.filter "$MODEL_KARPETA/MultiFilter_Train_Dev.model" \
-  --predict.out "$EMAITZA_KARPETA/iragarpenak.txt"
+# "$JAVA_KOMANDOA" "${JAVA_AUKERAK[@]}" -jar "$JAR_BIDEA" --run predict \
+#  --predict.test "$TXT_KARPETA/SMS_SpamCollection.test_blind.txt" \
+#  --predict.model "$MODEL_KARPETA/MLP_Train_Dev.model" \
+#  --predict.filter "$MODEL_KARPETA/MultiFilter_Train_Dev.model" \
+#  --predict.out "$EMAITZA_KARPETA/iragarpenak.txt"
 
