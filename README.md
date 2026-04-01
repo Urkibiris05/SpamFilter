@@ -22,7 +22,7 @@ java -jar SpamFilter.jar --help
   - Zer egiten du: SMSen TXT fitxategi bat ARFF bihurtzen du.
   - `--sms2arff.txt` [Beharrezkoa]: sarrerako TXTaren bidea.
   - `--sms2arff.arff` [Beharrezkoa]: irteerako ARFFaren bidea.
-  - `--sms2arff.blind` [Aukerakoa]: `true|false`, TXTak klase-etiketarik ez duen adierazten du.
+  - `--sms2arff.blind` [Aukerakoa]: `true|false`, TXTak klase-etiketarik ez duen adierazten du (`lehenetsita: false`).
 
 - `analyze`
   - Zer egiten du: ARFF baten oinarrizko estatistikak erakusten ditu (instantziak, atributuak, klase-banaketak).

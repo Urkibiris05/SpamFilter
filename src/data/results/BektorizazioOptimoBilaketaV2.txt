@@ -1,0 +1,675 @@
+======================================================
+ DATU GORDINEN ANALISIA - ETAPA: ETAPA
+======================================================
+Instantzia kopuru osoa (SMS): 3374
+Atributuen kopurua (Zutabeak): 2
+Klase banaketa:
+  - ham: 2929 instantzia (86,81%)
+  - spam: 445 instantzia (13,19%)
+======================================================
+
+======================================================
+ DATU GORDINEN ANALISIA - ETAPA: TRAIN
+======================================================
+Instantzia kopuru osoa (SMS): 2699
+Atributuen kopurua (Zutabeak): 2
+Klase banaketa:
+  - ham: 2343 instantzia (86,81%)
+  - spam: 356 instantzia (13,19%)
+======================================================
+
+======================================================
+ DATU GORDINEN ANALISIA - ETAPA: DEV
+======================================================
+Instantzia kopuru osoa (SMS): 675
+Atributuen kopurua (Zutabeak): 2
+Klase banaketa:
+  - ham: 586 instantzia (86,81%)
+  - spam: 89 instantzia (13,19%)
+======================================================
+
+
+======================================================
+LABORATEGIA V2: ATTRIBUTE SELECTION GRID SEARCH
+======================================================
+
+>>> A FAMILIA: Banakako Ebaluatzaileak + Ranker <<<
+
+▶ ABIARAZTEN: A - Eval: InfoGain | Bilaketa: Ranker (Top 100)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 100 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 96,74%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9036 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8427 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8721 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9563 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9764
+      - Recall:    0,9863
+      - F-Measure: 0,9813
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 578   8 |   a = ham
+  14  75 |   b = spam
+
+     Prozesuaren denbora osoa: 16 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: InfoGain | Bilaketa: Ranker (Top 300)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 300 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 97,33%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9494 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8427 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8929 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9803 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9765
+      - Recall:    0,9932
+      - F-Measure: 0,9848
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 582   4 |   a = ham
+  14  75 |   b = spam
+
+     Prozesuaren denbora osoa: 35 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: InfoGain | Bilaketa: Ranker (Top 500)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 500 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 97,63%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9867 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8315 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,9024 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9825 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9750
+      - Recall:    0,9983
+      - F-Measure: 0,9865
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 585   1 |   a = ham
+  15  74 |   b = spam
+
+     Prozesuaren denbora osoa: 58 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: InfoGain | Bilaketa: Ranker (Top 750)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 750 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 92,44%
+
+     [SPAM klasearen metrikak]
+      - Precision: 1,0000 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,4270 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,5984 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9882 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9199
+      - Recall:    1,0000
+      - F-Measure: 0,9583
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  51  38 |   b = spam
+
+     Prozesuaren denbora osoa: 89 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: InfoGain | Bilaketa: Ranker (Top 1000)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 1000 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 86,81%
+
+     [SPAM klasearen metrikak]
+      - Precision: NaN (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,0000 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: NaN (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9865 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,8681
+      - Recall:    1,0000
+      - F-Measure: 0,9294
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  89   0 |   b = spam
+
+     Prozesuaren denbora osoa: 96 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: GainRatio | Bilaketa: Ranker (Top 100)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 100 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 96,30%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9848 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,7303 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8387 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9287 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9606
+      - Recall:    0,9983
+      - F-Measure: 0,9791
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 585   1 |   a = ham
+  24  65 |   b = spam
+
+     Prozesuaren denbora osoa: 5 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: GainRatio | Bilaketa: Ranker (Top 300)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 300 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 94,52%
+
+     [SPAM klasearen metrikak]
+      - Precision: 1,0000 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,5843 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,7376 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9403 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9406
+      - Recall:    1,0000
+      - F-Measure: 0,9694
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  37  52 |   b = spam
+
+     Prozesuaren denbora osoa: 14 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: GainRatio | Bilaketa: Ranker (Top 500)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 500 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 86,81%
+
+     [SPAM klasearen metrikak]
+      - Precision: NaN (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,0000 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: NaN (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9612 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,8681
+      - Recall:    1,0000
+      - F-Measure: 0,9294
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  89   0 |   b = spam
+
+     Prozesuaren denbora osoa: 24 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: GainRatio | Bilaketa: Ranker (Top 750)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 750 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 96,59%
+
+     [SPAM klasearen metrikak]
+      - Precision: 1,0000 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,7416 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8516 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9881 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9622
+      - Recall:    1,0000
+      - F-Measure: 0,9808
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  23  66 |   b = spam
+
+     Prozesuaren denbora osoa: 38 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: GainRatio | Bilaketa: Ranker (Top 1000)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 1000 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 86,81%
+
+     [SPAM klasearen metrikak]
+      - Precision: NaN (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,0000 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: NaN (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9860 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,8681
+      - Recall:    1,0000
+      - F-Measure: 0,9294
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  89   0 |   b = spam
+
+     Prozesuaren denbora osoa: 50 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: SymmetricalUncertainty | Bilaketa: Ranker (Top 100)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 100 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 97,33%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9383 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8539 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8941 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9572 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9781
+      - Recall:    0,9915
+      - F-Measure: 0,9847
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 581   5 |   a = ham
+  13  76 |   b = spam
+
+     Prozesuaren denbora osoa: 5 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: SymmetricalUncertainty | Bilaketa: Ranker (Top 300)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 300 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 96,74%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9855 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,7640 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8608 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9756 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9653
+      - Recall:    0,9983
+      - F-Measure: 0,9815
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 585   1 |   a = ham
+  21  68 |   b = spam
+
+     Prozesuaren denbora osoa: 14 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: SymmetricalUncertainty | Bilaketa: Ranker (Top 500)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 500 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 97,48%
+
+     [SPAM klasearen metrikak]
+      - Precision: 1,0000 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8090 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8944 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9824 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9718
+      - Recall:    1,0000
+      - F-Measure: 0,9857
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  17  72 |   b = spam
+
+     Prozesuaren denbora osoa: 24 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: SymmetricalUncertainty | Bilaketa: Ranker (Top 750)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 750 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 95,11%
+
+     [SPAM klasearen metrikak]
+      - Precision: 1,0000 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,6292 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,7724 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9880 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9467
+      - Recall:    1,0000
+      - F-Measure: 0,9726
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  33  56 |   b = spam
+
+     Prozesuaren denbora osoa: 37 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: SymmetricalUncertainty | Bilaketa: Ranker (Top 1000)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 1000 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 86,81%
+
+     [SPAM klasearen metrikak]
+      - Precision: NaN (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,0000 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: NaN (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9859 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,8681
+      - Recall:    1,0000
+      - F-Measure: 0,9294
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  89   0 |   b = spam
+
+     Prozesuaren denbora osoa: 51 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: ReliefF (Instantzietan oinarritua) | Bilaketa: Ranker (Top 100)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 100 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 96,00%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9189 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,7640 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8344 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9371 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9651
+      - Recall:    0,9898
+      - F-Measure: 0,9773
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 580   6 |   a = ham
+  21  68 |   b = spam
+
+     Prozesuaren denbora osoa: 6 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: ReliefF (Instantzietan oinarritua) | Bilaketa: Ranker (Top 300)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 300 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 95,26%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9524 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,6742 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,7895 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9398 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9526
+      - Recall:    0,9949
+      - F-Measure: 0,9733
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 583   3 |   a = ham
+  29  60 |   b = spam
+
+     Prozesuaren denbora osoa: 14 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: ReliefF (Instantzietan oinarritua) | Bilaketa: Ranker (Top 500)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 500 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 94,96%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,7835 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8539 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8172 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9458 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9775
+      - Recall:    0,9642
+      - F-Measure: 0,9708
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 565  21 |   a = ham
+  13  76 |   b = spam
+
+     Prozesuaren denbora osoa: 24 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: ReliefF (Instantzietan oinarritua) | Bilaketa: Ranker (Top 750)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 750 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 94,52%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,7500 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8764 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8083 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9595 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9807
+      - Recall:    0,9556
+      - F-Measure: 0,9680
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 560  26 |   a = ham
+  11  78 |   b = spam
+
+     Prozesuaren denbora osoa: 38 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: A - Eval: ReliefF (Instantzietan oinarritua) | Bilaketa: Ranker (Top 1000)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 1000 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 86,81%
+
+     [SPAM klasearen metrikak]
+      - Precision: NaN (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,0000 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: NaN (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9556 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,8681
+      - Recall:    1,0000
+      - F-Measure: 0,9294
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 586   0 |   a = ham
+  89   0 |   b = spam
+
+     Prozesuaren denbora osoa: 51 segundo.
+------------------------------------------------------
+
+
+>>> B FAMILIA: Azpimultzo Ebaluatzaileak (CFS) + Bilaketa Konplexuak <<<
+
+▶ ABIARAZTEN: B - Eval: CFS | Bilaketa: GreedyStepwise (Forward)
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 51 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 97,48%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9615 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8427 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8982 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9557 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9765
+      - Recall:    0,9949
+      - F-Measure: 0,9856
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 583   3 |   a = ham
+  14  75 |   b = spam
+
+     Prozesuaren denbora osoa: 8 segundo.
+------------------------------------------------------
+
+
+▶ ABIARAZTEN: B - Eval: CFS | Bilaketa: BestFirst
+  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...
+  [i] Hautatutako BENETAKO hiztegi-tamaina: 51 atributu.
+  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...
+  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...
+
+  EMAITZA XEHATUAK:
+     Accuracy: 97,48%
+
+     [SPAM klasearen metrikak]
+      - Precision: 0,9615 (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)
+      - Recall:    0,8427 (Benetako Spam guztietatik, zenbat harrapatu ditut?)
+      - F-Measure: 0,8982 (Precision eta Recall arteko batezbesteko harmonikoa)
+      - AUC (ROC): 0,9557 (Kurbaren azpiko azalera.)
+
+     [HAM klasearen metrikak (mezu legitimoak)]
+      - Precision: 0,9765
+      - Recall:    0,9949
+      - F-Measure: 0,9856
+
+     NAHASMEN-MATRIZEA
+   a   b   <-- classified as
+ 583   3 |   a = ham
+  14  75 |   b = spam
+
+     Prozesuaren denbora osoa: 10 segundo.
+------------------------------------------------------

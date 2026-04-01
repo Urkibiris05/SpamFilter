@@ -7,7 +7,6 @@ import weka.core.Instances;
 import weka.core.SerializationHelper;
 import weka.core.converters.ArffSaver;
 import weka.core.converters.ConverterUtils.DataSource;
-import weka.core.pmml.jaxbbindings.True;
 import weka.core.stemmers.IteratedLovinsStemmer;
 import weka.core.stemmers.LovinsStemmer;
 import weka.core.stemmers.Stemmer;
@@ -21,7 +20,6 @@ import weka.filters.MultiFilter;
 import weka.filters.supervised.attribute.AttributeSelection;
 import weka.filters.supervised.instance.Resample;
 import weka.filters.unsupervised.attribute.StringToWordVector;
-import weka.filters.unsupervised.instance.RemovePercentage;
 
 import java.io.File;
 import java.io.PrintWriter;
@@ -173,6 +171,8 @@ public class DataProcessor {
             bekData = Filter.useFilter(rawData, multiFilter);
 
             // 5. Filtro bateratua gorde gainontzeko datu sortak hiztegi berarekin bektorizatzeko
+            File multiFilterFile = new File(filterModelPath);
+            multiFilterFile.createNewFile();
             SerializationHelper.write(filterModelPath, multiFilter);
             System.out.println("  [TRAIN] Filtro bateratua zuzen gordeta hurrengo helbidean: " + filterModelPath);
 
@@ -199,7 +199,7 @@ public class DataProcessor {
         saver.setInstances(bekData);
         saver.writeBatch();
 
-        System.out.println("  [OK] ARFF fitxategia zuzen sortuta: " + bekDataPath + " (" + (bekData.numAttributes() - 1) + " atributos)");
+        System.out.println("  [OK] ARFF fitxategia zuzen sortuta: " + bekDataPath + " (" + (bekData.numAttributes() - 1) + " atributo)");
     }
 
 
@@ -384,7 +384,7 @@ public class DataProcessor {
             Ranker ranker = new Ranker();
             int[] topAtributuak = ranker.search(eval, data);
 
-            int inprimatzekoKopurua = Math.min(Integer.MAX_VALUE, topAtributuak.length);
+            int inprimatzekoKopurua = Math.min(10, topAtributuak.length);
             int count = 0;
             for (int i = 0; i < topAtributuak.length && count < inprimatzekoKopurua; i++) {
                 int attrIndex = topAtributuak[i];
@@ -532,7 +532,7 @@ public class DataProcessor {
             long startTime = System.currentTimeMillis();
 
             // 1. IRAGAZKIAK TRAINen BAKARRIK APLIKATU (hiztegia ikasteko)
-            System.out.println("  [1/3] TRAINen bektorizatzen eta atributuak hautatzen...");
+            System.out.println("  [1/3] Entrenamendurako multzoa bektorizatzen eta atributuak hautatzen...");
             stwv.setInputFormat(trainRaw);
             Instances trainBektorizatua = Filter.useFilter(trainRaw, stwv);
             Instances trainFinal = trainBektorizatua;
@@ -543,10 +543,10 @@ public class DataProcessor {
             }
 
             int atributuKopurua = trainFinal.numAttributes() - 1;
-            System.out.println("  [ℹ] Hautatutako BENETAKO hiztegi-tamaina: " + atributuKopurua + " atributu.");
+            System.out.println("  [i] Hautatutako BENETAKO hiztegi-tamaina: " + atributuKopurua + " atributu.");
 
             // 2. Azken sailkatzailea sortu (MLP)
-            System.out.println("  [2/3] Multilayer Perceptron TRAINekin entrenatzen...");
+            System.out.println("  [2/3] Multilayer Perceptron entrenamendurako datuekin entrenatzen...");
             MultilayerPerceptron mlp = new MultilayerPerceptron();
             mlp.setHiddenLayers("5");
             mlp.setLearningRate(0.1);
@@ -554,7 +554,7 @@ public class DataProcessor {
             mlp.buildClassifier(trainFinal);
 
             // 3. DEV bide beretik pasatu (hiztegia aplikatu)
-            System.out.println("  [3/3] Eredua DEVekin ebaluatzen...");
+            System.out.println("  [3/3] Eredua ebaluaziorako multzoarekin frogatzen...");
             Instances devBektorizatua = Filter.useFilter(devRaw, stwv);
             Instances devFinal = devBektorizatua;
             if (asFilter != null) {
@@ -576,7 +576,7 @@ public class DataProcessor {
                 System.out.println("  [!] Ez dira 'spam' edo 'ham' klaseak aurkitu izen zehatz horrekin. Begiratu maiuskula/minuskulak.");
             }
 
-            System.out.println("\n  EMAITZA XEHATUAK (Data Leakagerik gabe):");
+            System.out.println("\n  EMAITZA XEHATUAK:");
             System.out.printf("     Accuracy: %.2f%%\n", eval.pctCorrect());
 
             if (spamIndex != -1 && hamIndex != -1) {
@@ -584,7 +584,7 @@ public class DataProcessor {
                 System.out.printf("      - Precision: %.4f (Spam gisa markatutako guztietatik, zenbat ziren benetakoak?)\n", eval.precision(spamIndex));
                 System.out.printf("      - Recall:    %.4f (Benetako Spam guztietatik, zenbat harrapatu ditut?)\n", eval.recall(spamIndex));
                 System.out.printf("      - F-Measure: %.4f (Precision eta Recall arteko batezbesteko harmonikoa)\n", eval.fMeasure(spamIndex));
-                System.out.printf("      - AUC (ROC): %.4f (Kurbaren azpiko azalera. >0.95 bikaina da)\n", eval.areaUnderROC(spamIndex));
+                System.out.printf("      - AUC (ROC): %.4f (Kurbaren azpiko azalera.)\n", eval.areaUnderROC(spamIndex));
 
                 System.out.println("\n     [HAM klasearen metrikak (mezu legitimoak)]");
                 System.out.printf("      - Precision: %.4f\n", eval.precision(hamIndex));

@@ -226,6 +226,11 @@ public class SpamFilter {
     }
 
     private static String balioaPathBadaNormalizatu(String key, String value) {
+        // Ez normalizatu boolearrak: bestela "true" -> "/cwd/true" bihurtzen da.
+        if ("vectorize.train".equals(key) || "sms2arff.blind".equals(key)) {
+            return value;
+        }
+
         if (!key.contains("path")
                 && !key.endsWith(".txt")
                 && !key.endsWith(".arff")
@@ -259,7 +264,7 @@ public class SpamFilter {
     private static String beharrezkoa(Map<String, String> aukerak, String gakoa) {
         String balioa = aukerak.get(gakoa);
         if (balioa == null || balioa.trim().isEmpty()) {
-            throw new IllegalArgumentException("Falta da argumentu hau: --" + gakoa);
+            throw new IllegalArgumentException("Argumentu hau falta da: --" + gakoa);
         }
         return balioa;
     }

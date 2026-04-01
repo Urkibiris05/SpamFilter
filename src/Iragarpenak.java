@@ -29,7 +29,7 @@ public class Iragarpenak {
     public void Iragarpenak(String test, Classifier mlp, String multiFilterPath, String out) throws Exception {
 
         dataProcessor.sms2Arff(test, "SMS_SpamCollection.test_blind.arff",true);
-        System.out.println("ARFF fitxategia hemen sortu da: src/data/arff/SMS_SpamCollection.test_blind.arff");
+        System.out.println("ARFF fitxategia hemen sortu da: ./SMS_SpamCollection.test_blind.arff");
 
         dataProcessor.bektorizatu("SMS_SpamCollection.test_blind.arff",
                         "SMS_SpamCollection.bektest_blind.arff",
