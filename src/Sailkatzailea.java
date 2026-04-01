@@ -9,9 +9,21 @@ import weka.core.converters.ConverterUtils.DataSource;
 import java.io.File;
 import java.io.IOException;
 
+/**
+ * SMS Spam sailkapenerako modeloak kudeatzen dituen klasea.
+ * Parametroen ekorketa eta eredu finalaren sorkuntza barne hartzen ditu.
+ * @author Asier S
+ * @version 1.0
+ */
 public class Sailkatzailea {
     private DataProcessor dataProcessor = new DataProcessor();
 
+    /**
+     * Entrenamendu eta garapen datuak (ARFF) kargatzen ditu fitxategi bideetatik.
+     * @param args Fitxategien bideak dituen array-a (args[0]: train, args[1]: dev).
+     * @return Bi Instances objektu dituen array-a [0: train, 1: dev].
+     * @throws Exception Fitxategiak irakurtzean akatsen bat gertatzen bada.
+     */
     public Instances[] arffKargatu(String[] args) throws Exception{
         try {
             Instances[] arff = new Instances[2];
@@ -36,28 +48,13 @@ public class Sailkatzailea {
         }
     }
 
-    //NO SABER COMO SE HACE
-    public void erregresioLineala(Instances[] instantziak) throws Exception {
-        Instances train = instantziak[0];
-        Instances dev = instantziak[1];
-
-        System.out.println("======================================================");
-        System.out.println("              📊 ERREGRESIO LINEALA ");
-        System.out.println("======================================================");
-
-        MultilayerPerceptron mlp = new MultilayerPerceptron();
-        mlp.setNominalToBinaryFilter(true);  //Mirar que hace
-        mlp.setHiddenLayers("1");
-        mlp.setLearningRate(0.1);
-        mlp.setMomentum(0.1);
-        mlp.buildClassifier(train);
-
-        Evaluation eval = new Evaluation(train);
-        eval.evaluateModel(mlp, dev);
-        System.out.println(eval.toMatrixString());
-        System.out.println(eval.toClassDetailsString());
-    }
-
+    /**
+     * Parametroen ekorketa egiten du Precision metrika maximizatzeko.
+     * Hidden layers, learning rate eta momentum konbinazio desberdinak probatzen ditu.
+     * @param instantziak Ebaluaziorako erabiliko diren datuak (train eta dev).
+     * @return Parametro optimoen array-a precision arabera (metrika guztien arabera egiteko imprimatutako nahasmen matrizei erreparatu) [0: HiddenLayers, 1: LearningRate, 2: Momentum].
+     * @throws Exception Iterazio bakoitzean sailkatzaileak huts egiten badu.
+     */
     public String[] parametroOptimoakLortu(Instances[] instantziak) throws Exception{
         try{
             Instances train = instantziak[0];
@@ -68,7 +65,7 @@ public class Sailkatzailea {
             System.out.println("======================================================");
 
             String[] balioParametroa = new String[3];
-            String[] hiddenLayersBalioak = {"5", "10", "15", "5,10", "10, 5", "5, 5, 5", "5,10,15", "15,10,5"};
+            String[] hiddenLayersBalioak = {"1", "5", "10", "15", "5,10", "10, 5", "5, 5, 5", "5,10,15", "15,10,5"};
             double[] learningRatesBalioak = {0.01, 0.05, 0.1, 0.2, 0.3};
             double[] momentumsBalioak = {0.1, 0.2};
             String bestH = "";
@@ -133,6 +130,17 @@ public class Sailkatzailea {
         }
     }
 
+    /**
+     * Parametro optimoak erabiliz, modelo optimoa sortzen du nahi diren datu sortekin eta diskoan gordetzen du.
+     * @param parametroak Aukeratutako HL, LR eta Momentum balioak.
+     * @param trainPath Entrenamendu datuen bidea.
+     * @param devPath Garapen datuen bidea.
+     * @param rawDataPath Datu guztiak batuko diren ARFF fitxategiaren bidea.
+     * @param bekDataPath Bektorizazioaren ondoren lortuko den fitxategia baita non gordeko den.
+     * @param filterPath Erabiliko den iragazkiaren bidea.
+     * @param outputPath Eredua (.model) gordeko den bidea.
+     * @throws Exception Fitxategiak idaztean edo eredua eraikitzean akatsen bat badago.
+     */
     public void sailkatzaileaSortu(String[] parametroak, String trainPath, String devPath, String rawDataPath, String bekDataPath, String filterPath, String outputPath) throws Exception{
         try {
             DataSource sourceTrain = new DataSource(trainPath);
