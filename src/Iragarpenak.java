@@ -12,46 +12,55 @@ public class Iragarpenak {
 
     }
 
+    /**
+     * Test instantzien iragarpenak kalkulatu eta txt fitxategian idazten ditu.
+     *
+     * <p>Metodo honek test multzo bektorizatua eta jatorrizko test multzoa erabiltzen ditu:
+     * bektorizatua klasifikazioak egiteko eta jatorrizko testua mezu originala lortzeko.</p>
+     *
+     * <p><b>Garrantzitsua:</b> {@code testBek} eta {@code test} instantzien ordena bera izan behar da.</p>
+     *
+     * @param testBek test multzo bektorizatua (ereduak prozesatzeko erabiltzen du)
+     * @param test test multzo jatorrizoa (mezuak lortzeko)
+     * @param mlp entrenatu nahi den Weka Classifier-a
+     * @param out txt irteera fitxategiaren bidea
+     * @throws Exception irakurketa, idazketa edo klasifikazioan errorea gertatzen bada
+     */
     public void Iragarpenak(Instances testBek, Instances test, Classifier mlp, String out) throws Exception {
-        // 1. Configurar los índices de clase en ambos conjuntos de datos
+
         if (testBek.classIndex() == -1) {
             testBek.setClassIndex(testBek.numAttributes() - 1);
         }
-        // 'test' es el conjunto original (el que tiene el atributo Text como String)
+
         if (test.classIndex() == -1) {
             test.setClassIndex(test.numAttributes() - 1);
         }
 
-        // 2. Preparar el escritor de archivos
+        //Irteera fitxategia
         PrintWriter writer = new PrintWriter(new FileWriter(out));
         writer.println("Instantzia,Mezua,Iragarpena,Konfiantza");
 
         System.out.println("[INFO] Iragarpenak egiten...");
 
-        // 3. Iterar sobre las instancias
-        // Usamos testBek.numInstances() para asegurar que recorremos las que el modelo va a procesar
+        //Instantziak iteratu
         for (int i = 0; i < testBek.numInstances(); i++) {
 
-            // INSTANCIA ORIGINAL (para el texto)
-            Instance instOriginal = test.instance(i);
-            // INSTANCIA VECTORIZADA (para el modelo)
-            Instance instVectorizada = testBek.instance(i);
+            Instance instHasi = test.instance(i);
 
-            // Extraer el texto original del atributo 0 de la instancia NO vectorizada
-            String mezuaOriginala = instOriginal.stringValue(0);
+            Instance instBek = testBek.instance(i);
 
-            // CLASIFICAR usando la instancia vectorizada (la que el MLP entiende)
-            double clsLabel = mlp.classifyInstance(instVectorizada);
+            //Mezua lortu
+            String mezua = instHasi.stringValue(0);
 
-            // Obtener confianza
-            double[] distribution = mlp.distributionForInstance(instVectorizada);
+            double clsLabel = mlp.classifyInstance(instBek);
+
+            double[] distribution = mlp.distributionForInstance(instBek);
             double confidence = distribution[(int) clsLabel];
 
-            // Nombre de la clase predicha (ham/spam)
+            //Predikzioa lortu
             String prediction = testBek.classAttribute().value((int) clsLabel);
 
-            // Escribir en el CSV
-            String mezuaEscaped = mezuaOriginala.replace("\"", "\"\"");
+            String mezuaEscaped = mezua.replace("\"", "\"\"");
             writer.println((i + 1) + ",\"" + mezuaEscaped + "\"," + prediction + "," + String.format("%.4f", confidence));
         }
 

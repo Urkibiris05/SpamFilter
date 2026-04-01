@@ -238,6 +238,7 @@ public class KalitateEstimazioa {
         pw.println("Precision: " + eval.precision(spamIdx));
         pw.println("Recall: " + eval.recall(spamIdx));
         pw.println("F-Score: " + eval.fMeasure(spamIdx));
+        pw.println(eval.toMatrixString());
         pw.close();
     }
 
