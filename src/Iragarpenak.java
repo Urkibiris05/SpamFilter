@@ -7,7 +7,7 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 
 public class Iragarpenak {
-
+        DataProcessor dataProcessor = new DataProcessor();
     public Iragarpenak() {
 
     }
@@ -20,48 +20,47 @@ public class Iragarpenak {
      *
      * <p><b>Garrantzitsua:</b> {@code testBek} eta {@code test} instantzien ordena bera izan behar da.</p>
      *
-     * @param testBek test multzo bektorizatua (ereduak prozesatzeko erabiltzen du)
+     *
      * @param test test multzo jatorrizoa (mezuak lortzeko)
      * @param mlp entrenatu nahi den Weka Classifier-a
      * @param out txt irteera fitxategiaren bidea
      * @throws Exception irakurketa, idazketa edo klasifikazioan errorea gertatzen bada
      */
-    public void Iragarpenak(Instances testBek, Instances test, Classifier mlp, String out) throws Exception {
+    public void Iragarpenak(String test,Classifier mlp, String out) throws Exception {
+
+        dataProcessor.sms2Arff(test, "src/data/arff/SMS_SpamCollection.test_blind.arff",true);
+        System.out.println("ARFF fitxategia hemen sortu da: src/data/arff/SMS_SpamCollection.test_blind.arff");
+
+        dataProcessor.bektorizatu("src/data/arff/SMS_SpamCollection.test_blind.arff",
+                        "src/data/arff/SMS_SpamCollection.bektest_blind.arff",
+                        "src/data/model/multiFilter.model",false);
+
+        ConverterUtils.DataSource sourceBekTest = new ConverterUtils.DataSource("src/data/arff/SMS_SpamCollection.bektest_blind.arff");
+        Instances testBek = sourceBekTest.getDataSet();
 
         if (testBek.classIndex() == -1) {
             testBek.setClassIndex(testBek.numAttributes() - 1);
         }
 
-        if (test.classIndex() == -1) {
-            test.setClassIndex(test.numAttributes() - 1);
-        }
-
         //Irteera fitxategia
         PrintWriter writer = new PrintWriter(new FileWriter(out));
-        writer.println("Instantzia,Mezua,Iragarpena,Konfiantza");
+        writer.println("Instantzia,Iragarpena");
 
         System.out.println("[INFO] Iragarpenak egiten...");
 
         //Instantziak iteratu
         for (int i = 0; i < testBek.numInstances(); i++) {
 
-            Instance instHasi = test.instance(i);
 
             Instance instBek = testBek.instance(i);
 
-            //Mezua lortu
-            String mezua = instHasi.stringValue(0);
 
             double clsLabel = mlp.classifyInstance(instBek);
-
-            double[] distribution = mlp.distributionForInstance(instBek);
-            double confidence = distribution[(int) clsLabel];
 
             //Predikzioa lortu
             String prediction = testBek.classAttribute().value((int) clsLabel);
 
-            String mezuaEscaped = mezua.replace("\"", "\"\"");
-            writer.println((i + 1) + ",\"" + mezuaEscaped + "\"," + prediction + "," + String.format("%.4f", confidence));
+            writer.println((i + 1) +  "\"," + prediction);
         }
 
         writer.close();
